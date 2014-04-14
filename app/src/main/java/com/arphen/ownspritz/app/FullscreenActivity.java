@@ -42,7 +42,7 @@ public class FullscreenActivity extends Activity implements GestureDetector.OnGe
     private int width;
     private float wpm;
     private TextView wpmtv;
-    private TextView tv;
+    private SpritzView tv;
     private SeekBar sb;
     private boolean m_running;
     private String[] m_content;
@@ -61,7 +61,7 @@ public class FullscreenActivity extends Activity implements GestureDetector.OnGe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fullscreen);
         wpmtv=(TextView)findViewById(R.id.wpmtv);
-        tv= (TextView) findViewById(R.id.fullscreen_content);
+        tv= (SpritzView) findViewById(R.id.spritzview);
         sb = (SeekBar) findViewById(R.id.seekBar);
         chpter = (Button) findViewById(R.id.chapter);
         gestureScanner = new GestureDetector(this);
@@ -200,6 +200,8 @@ public class FullscreenActivity extends Activity implements GestureDetector.OnGe
             tv.setText(m_content[m_pos]);
         }
     };
+
+
     @Override
     public boolean onDown(MotionEvent motionEvent) {
 return false;    }

@@ -17,7 +17,7 @@
         android:id="@+id/wpmtv"
         android:layout_gravity="center_horizontal|top" />
 
-    <TextView android:id="@+id/fullscreen_content"
+    <!--TextView android:id="@+id/fullscreen_content"
         android:layout_width="600dp"
         android:layout_height="137dp"
         android:keepScreenOn="true"
@@ -26,7 +26,14 @@
         android:textSize="50sp"
         android:gravity="center"
         android:text="@string/dummy_content"
-        android:layout_gravity="center" />
+        android:layout_gravity="center"
+        android:textAlignment="gravity" /-->
+    <com.arphen.ownspritz.app.SpritzView
+        android:id="@+id/spritzview"
+        android:layout_width="match_parent"
+        android:layout_height="134dp"
+        android:gravity="center|center_vertical"
+        android:layout_gravity="center_vertical" />
 
     <SeekBar
         android:layout_width="500dp"
@@ -47,6 +54,8 @@
         android:text="Choose Chapter"
         android:id="@+id/chapter"
         android:layout_gravity="right|top" />
+
+
 
     <!-- This FrameLayout insets its children based on system windows using
          android:fitsSystemWindows. -->
