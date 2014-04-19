@@ -23,4 +23,7 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile files('libs/slf4j-android-1.6.1-RC1.jar')
     compile files('libs/epublib-core-latest.jar')
+    compile files('libs/pdfbox-app-1.8.4.jar')
+    compile files('libs/fontbox-1.8.4.jar')
+    compile files('libs/jempbox-1.8.4.jar')
 }

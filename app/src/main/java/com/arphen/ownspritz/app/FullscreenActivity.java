@@ -33,7 +33,7 @@ public class FullscreenActivity extends Activity implements GestureDetector.OnGe
     private int width;
     private TextView wpmtv;
     private SpritzView tv;
-    public SeekBar sb;
+    public BlinkProgressBar sb;
     private int interact_sb;
     final int ACTIVITY_CHOOSE_FILE = 1;
     final int ACTIVITY_CHOOSE_CHAPTER=888;
@@ -47,7 +47,7 @@ public class FullscreenActivity extends Activity implements GestureDetector.OnGe
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         wpmtv=(TextView)findViewById(R.id.wpmtv);
         tv= (SpritzView) findViewById(R.id.spritzview);
-        sb = (SeekBar) findViewById(R.id.seekBar);
+        sb = (BlinkProgressBar) findViewById(R.id.seekBar);
         chpter = (Button) findViewById(R.id.chapter);
         gestureScanner = new GestureDetector(this);
         //Metrics
@@ -56,15 +56,7 @@ public class FullscreenActivity extends Activity implements GestureDetector.OnGe
         width = dm.widthPixels;
         height = dm.heightPixels;
         wpmthresh = (0.7 * width);
-        sb.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                sb.animate()
-                        .alpha(0f)
-                        .setDuration(1000)
-                        .setListener(null);
-            }
-        },5000);
+        sb.hide();
         sb.setOnSeekBarChangeListener(
                 new SeekBar.OnSeekBarChangeListener() {
                     @Override
@@ -72,27 +64,17 @@ public class FullscreenActivity extends Activity implements GestureDetector.OnGe
                         if (!arg2)
                             return;
                         tv.setPosition(arg1);
-                        interact_sb = (int) (System.currentTimeMillis());
-                        sb.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                if((int) (System.currentTimeMillis()) - interact_sb>4800)
-                                sb.animate()
-                                        .alpha(0f)
-                                        .setDuration(1000)
-                                        .setListener(null);
-                            }
-                        },5000);
+                        sb.show();
                     }
 
                     @Override
                     public void onStartTrackingTouch(SeekBar seekBar) {
-                        interact_sb = (int) (System.currentTimeMillis());
+                        sb.show();
                     }
 
                     @Override
                     public void onStopTrackingTouch(SeekBar seekBar) {
-                        interact_sb = (int) (System.currentTimeMillis());
+                        sb.show();
                     }
                 });
 
@@ -133,8 +115,12 @@ public class FullscreenActivity extends Activity implements GestureDetector.OnGe
                     Uri uri = data.getData();
                     String filePath = uri.getPath();
                     Log.i("Filechooser",filePath);
+
                     try {
+
                         tv.init(filePath);
+                        sb.show();
+                        sb.setMax(tv.getLengthOfChapter());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -144,6 +130,8 @@ public class FullscreenActivity extends Activity implements GestureDetector.OnGe
                 if (resultCode == RESULT_OK){
                     int c = data.getIntExtra("result",0);
                     tv.setChapter(c);
+                    sb.show();
+                    sb.setMax(tv.getLengthOfChapter());
                 }
 
             }
@@ -167,17 +155,11 @@ return true;
     public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent2, float v, float v2) {
         Log.i("Gesturesscroll",String.valueOf(motionEvent)+String.valueOf(motionEvent2));
         if( (motionEvent.getY() > height-150) ){
-            Log.i("Gesturesscroll","bottom bezel");
-            interact_sb = (int) (System.currentTimeMillis());
-            sb.post(new Runnable() {
-                @Override
-                public void run() {
-                     sb.animate()
-                            .alpha(1f)
-                            .setDuration(1000)
-                            .setListener(null);
-                }
-            });
+            Log.i("Gesturesscroll","Bottom Bezel");
+            sb.show();
+            sb.setMax(tv.getLengthOfChapter());
+            Log.i("Gesturesscroll",String.valueOf(tv.getCurrentPosition()));
+            sb.setProgress(tv.getCurrentPosition());
         }
         return false;
     }
@@ -195,19 +177,6 @@ return true;
         if(motionEvent.getX()>wpmthresh && motionEvent2.getX()>wpmthresh) {
             tv.changeWpm(-v2 / 5000 * 200);
             wpmtv.setText(String.valueOf(tv.getWpm()));
-        }
-        if( (motionEvent.getY() > height-150) ){
-            interact_sb = (int) (System.currentTimeMillis());
-
-            sb.post(new Runnable() {
-                @Override
-                public void run() {
-                    sb.animate()
-                            .alpha(1f)
-                            .setDuration(1000)
-                            .setListener(null);
-                }
-            });
         }
         return false;
     }

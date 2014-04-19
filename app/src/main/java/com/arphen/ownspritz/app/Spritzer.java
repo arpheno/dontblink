@@ -34,7 +34,7 @@ public class Spritzer {
     }
     public String next(int dir){
         m_wordindex+=dir;
-        if(m_wordindex==m_chapter.length){
+        if(m_wordindex>=m_chapter.length){
             m_chapterindex++;
             setChapter(m_chapterindex);
             m_wordindex=0;
@@ -46,7 +46,7 @@ public class Spritzer {
        return m_chapter[m_wordindex];
     }
 
-    public int getLength(){
+    public int getLengthOfChapter(){
         return m_chapter.length;
     }
     public int getBooklength(){

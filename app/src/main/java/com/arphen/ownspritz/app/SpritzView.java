@@ -144,4 +144,14 @@ public void setChapter(int c){
     public void onClick(View view) {
 
     }
+    public int getCurrentPosition() {
+        if(m_init)
+            return gen.m_wordindex;
+        return 0;
+    }
+    public int getLengthOfChapter() {
+        if(m_init)
+            return gen.getLengthOfChapter();
+        return 5;
+    }
 }

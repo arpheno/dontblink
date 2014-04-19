@@ -70,7 +70,10 @@
     </content>
     <orderEntry type="jdk" jdkName="Android API 19 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" exported="" name="pdfbox-app-1.8.4" level="project" />
+    <orderEntry type="library" exported="" name="jempbox-1.8.4" level="project" />
     <orderEntry type="library" exported="" name="epublib-core-latest" level="project" />
+    <orderEntry type="library" exported="" name="fontbox-1.8.4" level="project" />
     <orderEntry type="library" exported="" name="support-v4-19.0.1" level="project" />
     <orderEntry type="library" exported="" name="slf4j-android-1.6.1-RC1" level="project" />
   </component>

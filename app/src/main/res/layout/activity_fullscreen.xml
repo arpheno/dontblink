@@ -35,12 +35,6 @@
         android:gravity="center|left"
         android:layout_gravity="center_vertical" />
 
-    <SeekBar
-        android:layout_width="500dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/seekBar"
-        android:layout_gravity="center_horizontal|bottom" />
-
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -55,6 +49,12 @@
         android:id="@+id/chapter"
         android:layout_gravity="right|top" />
 
+    <com.arphen.ownspritz.app.BlinkProgressBar
+        android:layout_width="464dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/seekBar"
+        android:layout_gravity="center"
+        android:layout_marginTop="100dp" />
 
 
     <!-- This FrameLayout insets its children based on system windows using
