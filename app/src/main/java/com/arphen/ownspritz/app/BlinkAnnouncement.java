@@ -3,35 +3,31 @@ package com.arphen.ownspritz.app;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
-import android.widget.SeekBar;
+import android.widget.TextView;
 
 
 /**
  * TODO: document your custom view class.
  */
-public class BlinkProgressBar extends SeekBar{
-
-    public BlinkProgressBar(Context context) {
+public class BlinkAnnouncement extends TextView {
+    public BlinkAnnouncement(Context context) {
         super(context);
         init(null, 0);
     }
 
-    public BlinkProgressBar(Context context, AttributeSet attrs) {
+    public BlinkAnnouncement(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(attrs, 0);
     }
 
-    public BlinkProgressBar(Context context, AttributeSet attrs, int defStyle) {
+    public BlinkAnnouncement(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init(attrs, defStyle);
     }
 
-    protected void onDraw (Canvas canvas) {
-        super.onDraw(canvas);
-    }
     private Runnable hide;
     private Runnable show;
-    private boolean onTop=true;
+    private boolean onTop=false;
 
     public  void hide(){
         removeCallbacks(hide);
@@ -54,7 +50,7 @@ public class BlinkProgressBar extends SeekBar{
         hide=new Runnable() {
             @Override
             public void run() {
-                    animate().alpha(0f).setDuration(1000).setListener(null);
+                animate().alpha(0f).setDuration(1000).setListener(null);
             }
         };
         show=new Runnable() {
@@ -63,6 +59,9 @@ public class BlinkProgressBar extends SeekBar{
                 animate().alpha(1f).setDuration(1000).setListener(null);
             }
         };
+    }
+    protected void onDraw (Canvas canvas) {
+        super.onDraw(canvas);
     }
 
 }

@@ -1,5 +1,5 @@
 <resources>
-    <declare-styleable name="BlinkProgressBar">
+    <declare-styleable name="BlinkAnnouncement">
         <attr name="exampleString" format="string" />
         <attr name="exampleDimension" format="dimension" />
         <attr name="exampleColor" format="color" />

@@ -28,21 +28,11 @@ public class SpritzView extends RelativeLayout implements View.OnClickListener {
         super(context, attrs);
         View view = LayoutInflater.from(context).inflate(R.layout.spritzview, this, true);
         left = (TextView) findViewById(R.id.textView);
-        view.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!m_init)
-                    return;
-                if (m_playing)
-                    stop();
-                else
-                    run();
-            }
-        });
         middle = (TextView) findViewById(R.id.textView2);
         right = (TextView) findViewById(R.id.textView3);
     }
-
+    public boolean is_init(){return m_init;}
+    public boolean is_playing(){return m_playing;}
     public void changeWpm(double wpm){
         m_wpm+=wpm;
 }
@@ -122,7 +112,7 @@ public void setChapter(int c){
     }
     public void setPosition(int position){
         if(m_init)
-        gen.m_wordindex=position;
+        setText(gen.setM_wordindex(position));
     }
     public int getNumberOfChapters(){
         if(!m_init)

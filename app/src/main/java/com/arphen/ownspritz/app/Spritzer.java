@@ -1,5 +1,6 @@
 package com.arphen.ownspritz.app;
 
+import android.text.Html;
 import android.util.Log;
 
 import java.io.IOException;
@@ -27,7 +28,14 @@ public class Spritzer {
         m_chapters=new ArrayList<String[]>();
         for(Resource resource :m_book.getTableOfContents().getAllUniqueResources()) {
             String decoded = new String(resource.getData(), resource.getInputEncoding());
-            decoded = android.text.Html.fromHtml(decoded).toString();
+            //decoded = android.text.Html.fromHtml(decoded);
+            if (decoded.contains("<body")) {
+                decoded = decoded.substring(decoded.indexOf("<body"));
+            }else{
+                decoded=" ";
+            }
+            decoded= Html.fromHtml(decoded).toString().replace("\n", " ").replaceAll("(?s)<!--.*?-->", "");
+            Log.i("xml", decoded);
             m_chapters.add(decoded.split("(?<=[\\s.,?!-])"));
         }
         setChapter(m_chapterindex);
@@ -57,6 +65,10 @@ public class Spritzer {
         Log.i("Spritzer", "Book title: " + m_book.getMetadata().getTitles());
         Log.i("Spritzer", "Chapter: " + String.valueOf(m_chapterindex));
         Log.i("Spritzer", "Word: " + String.valueOf(m_wordindex));
+    }
+    public String setM_wordindex(int i){
+        m_wordindex=i;
+        return m_chapter[m_wordindex];
     }
     public void setChapter(int c){
         Log.i("Spritzer", "Switching to Chapter"+String.valueOf(c));
