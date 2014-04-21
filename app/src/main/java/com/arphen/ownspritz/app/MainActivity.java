@@ -41,7 +41,7 @@ public class MainActivity extends Activity{
     private BlinkButton chapterbutton;
     private BlinkButton filebutton;
     private BlinkAnnouncement an;
-    private NumberPicker np;
+    private BlinkNumberPicker np;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,30 +52,23 @@ public class MainActivity extends Activity{
         tv = (SpritzView) findViewById(R.id.spritzview);
         sb = (BlinkProgressBar) findViewById(R.id.seekBar);
         an = (BlinkAnnouncement) findViewById(R.id.announcement);
-        np= (NumberPicker) findViewById(R.id.numberPicker);
+        np= (BlinkNumberPicker) findViewById(R.id.numberPicker);
         chapterbutton = (BlinkButton) findViewById(R.id.chapter);
         filebutton = (BlinkButton) this.findViewById(R.id.cf);
         //Metrics
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
         width = dm.widthPixels;
-        np.setMaxValue(500);
-        np.setMinValue(0);
-        String[] nums = new String[501];
-        for(int q=500;q>=0;q--){
-            nums[q]=String.valueOf((q-250)*10);
-        }
-        np.setDisplayedValues(nums);
+        height = dm.heightPixels;
+        wpmthresh = (0.7 * width);
         np.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
             public void onValueChange(NumberPicker numberPicker, int i, int i2) {
                 tv.changeWpm((i2-250)*10);
+                np.show();
                 announce(String.valueOf((i2-250)*10)+" Words per minute now");
             }
         });
-        np.setValue(300);
-        height = dm.heightPixels;
-        wpmthresh = (0.7 * width);
         tv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -107,7 +100,6 @@ public class MainActivity extends Activity{
                     @Override
                     public void onStopTrackingTouch(SeekBar seekBar) {
                         sb.show();
-                        runTV();
                     }
                 }
         );
@@ -183,6 +175,7 @@ public void chapterFromBeginning(int c){
         sb.hide();
         chapterbutton.hide();
         filebutton.hide();
+        np.hide();
         tv.run();
     }
 
@@ -190,6 +183,7 @@ public void chapterFromBeginning(int c){
         tv.stop();
         sb.setMax(tv.getLengthOfChapter());
         sb.showperm();
+        np.showperm();
         chapterbutton.showperm();
         filebutton.showperm();
     }

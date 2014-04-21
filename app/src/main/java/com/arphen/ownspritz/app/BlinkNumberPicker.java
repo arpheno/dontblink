@@ -3,26 +3,24 @@ package com.arphen.ownspritz.app;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
-import android.widget.TextView;
+import android.widget.NumberPicker;
 
-
-/**
- * TODO: document your custom view class.
- */
-public class BlinkAnnouncement extends TextView {
-
-    public BlinkAnnouncement(Context context) {
+public class BlinkNumberPicker extends NumberPicker {
+    public BlinkNumberPicker(Context context) {
         super(context);
         init(null, 0);
     }
-    public BlinkAnnouncement(Context context, AttributeSet attrs) {
+
+    public BlinkNumberPicker(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(attrs, 0);
     }
-    public BlinkAnnouncement(Context context, AttributeSet attrs, int defStyle) {
+
+    public BlinkNumberPicker(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init(attrs, defStyle);
     }
+
     private Runnable hide;
     private Runnable show;
     private boolean onTop = false;
@@ -48,6 +46,14 @@ public class BlinkAnnouncement extends TextView {
     }
 
     private void init(AttributeSet attrs, int defStyle) {
+        setMaxValue(500);
+        setMinValue(0);
+        String[] nums = new String[501];
+        for(int q=500;q>=0;q--){
+            nums[q]=String.valueOf((q-250)*10);
+        }
+        setDisplayedValues(nums);
+        setValue(300);
         hide = new Runnable() {
             @Override
             public void run() {
@@ -62,8 +68,8 @@ public class BlinkAnnouncement extends TextView {
         };
     }
 
+    @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
     }
-
 }
