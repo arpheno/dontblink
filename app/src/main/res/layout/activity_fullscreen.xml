@@ -9,13 +9,13 @@
          is needed to present your content, e.g. VideoView, SurfaceView,
          TextureView, etc. -->
 
-    <TextView
+    <!--TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="500"
         android:id="@+id/wpmtv"
-        android:layout_gravity="center_horizontal|top" />
+        android:layout_gravity="center_horizontal|top" /-->
 
     <!--TextView android:id="@+id/fullscreen_content"
         android:layout_width="600dp"
@@ -39,6 +39,22 @@
         android:layout_marginTop="20dp"
         android:layout_marginLeft="20dp"
         android:background="#000000" />
+    <View
+        android:layout_width="1dp"
+        android:layout_height="30dp"
+        android:id="@+id/line2"
+        android:background="@android:color/white"
+        android:layout_gravity="center"
+        android:layout_marginTop="45dp"
+        android:layout_marginRight="100dp" />
+    <View
+        android:layout_width="1dp"
+        android:layout_height="30dp"
+        android:background="@android:color/white"
+        android:id="@+id/line1"
+        android:layout_gravity="center"
+        android:layout_marginBottom="45dp"
+        android:layout_marginRight="100dp"/>
 
     <com.arphen.ownspritz.app.BlinkButton
         android:layout_width="54dp"
@@ -48,7 +64,8 @@
         android:layout_gravity="right|top"
         android:src="@drawable/choose_chapter"
         android:layout_marginRight="20dp"
-        android:layout_marginTop="18dp" />
+        android:layout_marginTop="18dp"
+        android:background="#000000"/>
 
     <com.arphen.ownspritz.app.BlinkProgressBar
         android:layout_width="464dp"
@@ -59,10 +76,11 @@
 
     <com.arphen.ownspritz.app.SpritzView
         android:id="@+id/spritzview"
-        android:layout_width="534dp"
-        android:layout_height="73dp"
+        android:layout_width="577dp"
+        android:layout_height="72dp"
+        android:layout_marginRight="100dp"
         android:layout_gravity="center"
-        android:layout_marginRight="100dp" />
+        android:gravity="center_vertical" />
 
     <view
         android:layout_width="wrap_content"

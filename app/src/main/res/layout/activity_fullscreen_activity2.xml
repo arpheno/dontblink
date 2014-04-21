@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0099cc"
+    android:background="#000000"
     tools:context="com.arphen.ownspritz.app.FullscreenActivity2">
 
     <!-- The primary full-screen view. This can be replaced with whatever view
@@ -14,10 +14,24 @@
 
     <GridView
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="249dp"
         android:id="@+id/gridView"
-        android:layout_gravity="left|center_vertical"
-        android:columnWidth="130dp"
+        android:layout_gravity="center_horizontal|bottom"
         android:clickable="true"
-        android:numColumns="auto_fit" />
+        android:numColumns="auto_fit"
+        android:textFilterEnabled="false"
+        android:gravity="bottom"
+        android:stretchMode="spacingWidthUniform"
+        android:columnWidth="50dp" />
+
+    <TextView
+        android:layout_width="286dp"
+        android:layout_height="75dp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Choose Chapter:"
+        android:id="@+id/textView"
+        android:layout_gravity="left|top"
+        android:textSize="30dp"
+        android:textIsSelectable="false"
+        android:gravity="center_vertical|center_horizontal" />
 </FrameLayout>

@@ -46,7 +46,6 @@ public class FullscreenActivity extends Activity implements GestureDetector.OnGe
         setContentView(R.layout.activity_fullscreen);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        wpmtv=(TextView)findViewById(R.id.wpmtv);
         tv= (SpritzView) findViewById(R.id.spritzview);
         sb = (BlinkProgressBar) findViewById(R.id.seekBar);
         an = (BlinkAnnouncement)findViewById(R.id.announcement);
@@ -215,7 +214,7 @@ return true;
     public boolean onFling(MotionEvent motionEvent, MotionEvent motionEvent2, float v, float v2) {
         if(motionEvent.getX()>wpmthresh && motionEvent2.getX()>wpmthresh) {
             tv.changeWpm(-v2 / 5000 * 200);
-            wpmtv.setText(String.valueOf(tv.getWpm()));
+            announce(String.valueOf(tv.getWpm())+" words per minute");
         }
         return false;
     }

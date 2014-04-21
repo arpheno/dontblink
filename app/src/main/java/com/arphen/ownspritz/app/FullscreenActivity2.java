@@ -2,6 +2,7 @@ package com.arphen.ownspritz.app;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -26,6 +27,7 @@ public class FullscreenActivity2 extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fullscreen_activity2);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         gridView = (GridView) findViewById(R.id.gridView);
         Intent i = getIntent();
         int chapters = i.getIntExtra("chapters", 0);

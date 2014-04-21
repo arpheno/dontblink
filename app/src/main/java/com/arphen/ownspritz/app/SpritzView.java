@@ -2,6 +2,7 @@ package com.arphen.ownspritz.app;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,6 +24,7 @@ public class SpritzView extends RelativeLayout implements View.OnClickListener {
     private boolean m_playing;
     private String m_word;
     private boolean m_init;
+    private Paint paint;
 
     public SpritzView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -30,7 +32,7 @@ public class SpritzView extends RelativeLayout implements View.OnClickListener {
         left = (TextView) findViewById(R.id.textView);
         middle = (TextView) findViewById(R.id.textView2);
         right = (TextView) findViewById(R.id.textView3);
-    }
+        }
     public boolean is_init(){return m_init;}
     public boolean is_playing(){return m_playing;}
     public void changeWpm(double wpm){
@@ -128,7 +130,7 @@ public void setChapter(int c){
     }
     protected void onDraw (Canvas canvas) {
         super.onDraw(canvas);
-    }
+        }
 
     @Override
     public void onClick(View view) {
