@@ -19,21 +19,21 @@ import com.arphen.ownspritz.app.util.SystemUiHider;
  *
  * @see SystemUiHider
  */
-public class FullscreenActivity2 extends Activity {
+public class ChapterChooser extends Activity {
     private SystemUiHider mSystemUiHider;
     private GridView gridView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_fullscreen_activity2);
+        setContentView(R.layout.chapter_chooser);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         gridView = (GridView) findViewById(R.id.gridView);
         Intent i = getIntent();
         int chapters = i.getIntExtra("chapters", 0);
         String[] numbers = new String[chapters];
-        for(int j=0;j<chapters;j++)
-            numbers[j]=String.valueOf(j+1);
+        for (int j = 0; j < chapters; j++)
+            numbers[j] = String.valueOf(j + 1);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1, numbers);
@@ -45,10 +45,10 @@ public class FullscreenActivity2 extends Activity {
                                     int position, long id) {
                 Log.i("Chapters", "Chosen chapter" + String.valueOf(position));
                 Intent returnIntent = new Intent();
-                returnIntent.putExtra("result",position);
-                setResult(RESULT_OK,returnIntent);
+                returnIntent.putExtra("result", position);
+                setResult(RESULT_OK, returnIntent);
                 finish();
-               }
+            }
         });
 
     }

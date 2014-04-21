@@ -10,15 +10,14 @@ import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 public class SpritzView extends RelativeLayout implements View.OnClickListener {
+    public Spritzer gen;
     private TextView left;
     private TextView middle;
     private TextView right;
-    public Spritzer gen;
     private Thread timer;
     private double m_wpm = 500;
     private boolean m_playing;
@@ -32,17 +31,24 @@ public class SpritzView extends RelativeLayout implements View.OnClickListener {
         left = (TextView) findViewById(R.id.textView);
         middle = (TextView) findViewById(R.id.textView2);
         right = (TextView) findViewById(R.id.textView3);
-        }
-    public boolean is_init(){return m_init;}
-    public boolean is_playing(){return m_playing;}
-    public void changeWpm(double wpm){
-        m_wpm+=wpm;
-}
-    public void init(String path) throws IOException {
+    }
+
+    public boolean is_init() {
+        return m_init;
+    }
+
+    public boolean is_playing() {
+        return m_playing;
+    }
+
+    public void changeWpm(double wpm) {
+        m_wpm = wpm;
+    }
+
+    public void init(InputStream in) throws IOException {
         Log.i("Spritzer", "Initializing Spritzer");
-        InputStream in = new FileInputStream(path);
         gen = new Spritzer(in);
-        m_init=true;
+        m_init = true;
     }
 
     public void setText(String word) {
@@ -76,18 +82,20 @@ public class SpritzView extends RelativeLayout implements View.OnClickListener {
                 return 4;
         }
     }
-public void setChapter(int c){
-    if(!m_init)return;
-    gen.setChapter(c);
-}
+
+    public void setChapter(int c) {
+        if (!m_init) return;
+        gen.setChapter(c);
+    }
+
     public void run() {
-        if(!m_init)return;
-        m_playing=true;
-         timer = new Thread(new Runnable() {
+        if (!m_init) return;
+        m_playing = true;
+        timer = new Thread(new Runnable() {
             @Override
             public void run() {
                 while (m_playing) {
-                    m_word=gen.next((int) Math.signum(m_wpm));
+                    m_word = gen.next((int) Math.signum(m_wpm));
                     post(new Runnable() {
                         @Override
                         public void run() {
@@ -96,13 +104,13 @@ public void setChapter(int c){
                     });
                     try {
                         double delaymult = 1;
-                        if(m_word.contains("."))
-                            delaymult*=2;
-                        if(m_word.contains(","))
-                            delaymult*=1.3;
-                        if(m_word.length()>6)
-                            delaymult*=1.6;
-                        Thread.sleep((long) (delaymult*60000/m_wpm));
+                        if (m_word.contains("."))
+                            delaymult *= 2;
+                        if (m_word.contains(","))
+                            delaymult *= 1.3;
+                        if (m_word.length() > 6)
+                            delaymult *= 1.6;
+                        Thread.sleep((long) (delaymult * 60000 / m_wpm));
 
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -112,37 +120,43 @@ public void setChapter(int c){
         });
         timer.start();
     }
-    public void setPosition(int position){
-        if(m_init)
-        setText(gen.setM_wordindex(position));
+
+    public void setPosition(int position) {
+        if (m_init)
+            setText(gen.setM_wordindex(position));
     }
-    public int getNumberOfChapters(){
-        if(!m_init)
+
+    public int getNumberOfChapters() {
+        if (!m_init)
             return 0;
         return gen.getBooklength();
     }
-    public int getWpm(){
+
+    public int getWpm() {
         return (int) m_wpm;
     }
 
-    public void stop(){
-        m_playing=false;
+    public void stop() {
+        m_playing = false;
     }
-    protected void onDraw (Canvas canvas) {
+
+    protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        }
+    }
 
     @Override
     public void onClick(View view) {
 
     }
+
     public int getCurrentPosition() {
-        if(m_init)
+        if (m_init)
             return gen.m_wordindex;
         return 0;
     }
+
     public int getLengthOfChapter() {
-        if(m_init)
+        if (m_init)
             return gen.getLengthOfChapter();
         return 5;
     }

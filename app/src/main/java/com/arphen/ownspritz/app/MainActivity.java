@@ -8,15 +8,17 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.NumberPicker;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.arphen.ownspritz.app.util.SystemUiHider;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -24,38 +26,54 @@ import java.io.IOException;
  *
  * @see SystemUiHider
  */
-public class FullscreenActivity extends Activity implements GestureDetector.OnGestureListener{
+public class MainActivity extends Activity{
 
+    final int ACTIVITY_CHOOSE_FILE = 1;
+    final int ACTIVITY_CHOOSE_CHAPTER = 888;
     public GestureDetector gestureScanner;
+    public BlinkProgressBar sb;
     private double wpmthresh;
     private int height;
     private int width;
     private TextView wpmtv;
     private SpritzView tv;
-    public BlinkProgressBar sb;
     private int interact_sb;
-    final int ACTIVITY_CHOOSE_FILE = 1;
-    final int ACTIVITY_CHOOSE_CHAPTER=888;
     private BlinkButton chapterbutton;
     private BlinkButton filebutton;
     private BlinkAnnouncement an;
+    private NumberPicker np;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_fullscreen);
+        setContentView(R.layout.main_activity);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        tv= (SpritzView) findViewById(R.id.spritzview);
+        tv = (SpritzView) findViewById(R.id.spritzview);
         sb = (BlinkProgressBar) findViewById(R.id.seekBar);
-        an = (BlinkAnnouncement)findViewById(R.id.announcement);
+        an = (BlinkAnnouncement) findViewById(R.id.announcement);
+        np= (NumberPicker) findViewById(R.id.numberPicker);
         chapterbutton = (BlinkButton) findViewById(R.id.chapter);
         filebutton = (BlinkButton) this.findViewById(R.id.cf);
-        gestureScanner = new GestureDetector(this);
         //Metrics
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
         width = dm.widthPixels;
+        np.setMaxValue(500);
+        np.setMinValue(0);
+        String[] nums = new String[501];
+        for(int q=500;q>=0;q--){
+            nums[q]=String.valueOf((q-250)*10);
+        }
+        np.setDisplayedValues(nums);
+        np.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange(NumberPicker numberPicker, int i, int i2) {
+                tv.changeWpm((i2-250)*10);
+                announce(String.valueOf((i2-250)*10)+" Words per minute now");
+            }
+        });
+        np.setValue(300);
         height = dm.heightPixels;
         wpmthresh = (0.7 * width);
         tv.setOnClickListener(new View.OnClickListener() {
@@ -65,7 +83,7 @@ public class FullscreenActivity extends Activity implements GestureDetector.OnGe
                     return;
                 if (tv.is_playing()) {
                     stopTV();
-                }else {
+                } else {
                     runTV();
                 }
             }
@@ -112,7 +130,7 @@ public class FullscreenActivity extends Activity implements GestureDetector.OnGe
             public void onClick(View v) {
                 Intent chooseChapter;
                 Intent intent;
-                chooseChapter = new Intent(getApplicationContext(), FullscreenActivity2.class);
+                chooseChapter = new Intent(getApplicationContext(), ChapterChooser.class);
                 int chapters = tv.getNumberOfChapters();
                 chooseChapter.putExtra("chapters", chapters);
                 if (chapters != 0)
@@ -120,22 +138,24 @@ public class FullscreenActivity extends Activity implements GestureDetector.OnGe
             }
         });
     }
-public void announce(String what){
-    an.setText(what);
-    an.show();
-}
+
+    public void announce(String what) {
+        an.setText(what);
+        an.show();
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch(requestCode) {
+        switch (requestCode) {
             case ACTIVITY_CHOOSE_FILE: {
-                if (resultCode == RESULT_OK){
+                if (resultCode == RESULT_OK) {
                     Uri uri = data.getData();
                     String filePath = uri.getPath();
-                    Log.i("Filechooser",filePath);
+                    Log.i("Filechooser", filePath);
                     announce("Loading File");
                     try {
-                        tv.init(filePath);
+                        InputStream in = new FileInputStream(filePath);
+                        tv.init(in);
                         stopTV();
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -143,79 +163,34 @@ public void announce(String what){
                 }
             }
             case ACTIVITY_CHOOSE_CHAPTER: {
-                if (resultCode == RESULT_OK){
-                    int c = data.getIntExtra("result",0);
-                    tv.setChapter(c);
-                    tv.setPosition(0);
-                    sb.setProgress(0);
-                    announce("Chapter: "+String.valueOf(c));
+                if (resultCode == RESULT_OK) {
+                    int c = data.getIntExtra("result", 0);
+                    chapterFromBeginning(c);
+                    announce("Chapter: " + String.valueOf(c));
                     stopTV();
                 }
 
             }
         }
     }
-    public void runTV(){
+public void chapterFromBeginning(int c){
+    tv.setChapter(c);
+    tv.setPosition(0);
+    sb.setProgress(0);
+    sb.show();
+}
+    public void runTV() {
         sb.hide();
         chapterbutton.hide();
         filebutton.hide();
         tv.run();
     }
-    public void stopTV(){
+
+    public void stopTV() {
         tv.stop();
         sb.setMax(tv.getLengthOfChapter());
         sb.showperm();
         chapterbutton.showperm();
         filebutton.showperm();
-    }
-    @Override
-    public boolean onDown(MotionEvent motionEvent) {
-        return false;    }
-
-    @Override
-    public void onShowPress(MotionEvent motionEvent) {
-
-    }
-
-    @Override
-    public boolean onSingleTapUp(MotionEvent motionEvent) {
-return true;
-    }
-
-    @Override
-    public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent2, float v, float v2) {
-        Log.i("Gesturesscroll",String.valueOf(motionEvent)+String.valueOf(motionEvent2));
-        if( (motionEvent.getY() > height-150) ){
-            Log.i("Gesturesscroll","Bottom Bezel");
-            sb.show();
-            chapterbutton.show();
-            filebutton.show();
-            sb.setMax(tv.getLengthOfChapter());
-            sb.setProgress(tv.getCurrentPosition());
-            Log.i("Gesturesscroll", String.valueOf(tv.getCurrentPosition()));
-        }
-        return false;
-    }
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {sb.show();
-        sb.setMax(tv.getLengthOfChapter());
-        sb.setProgress(tv.getCurrentPosition());
-        sb.show();
-        chapterbutton.show();
-        filebutton.show();
-        return gestureScanner.onTouchEvent(event);
-    }
-    @Override
-    public void onLongPress(MotionEvent motionEvent) {
-
-    }
-
-    @Override
-    public boolean onFling(MotionEvent motionEvent, MotionEvent motionEvent2, float v, float v2) {
-        if(motionEvent.getX()>wpmthresh && motionEvent2.getX()>wpmthresh) {
-            tv.changeWpm(-v2 / 5000 * 200);
-            announce(String.valueOf(tv.getWpm())+" words per minute");
-        }
-        return false;
     }
 }

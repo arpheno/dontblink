@@ -8,10 +8,10 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.arphen.ownspritz.app.FullscreenActivity"
+            android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/app_name"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
+            android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -19,11 +19,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.arphen.ownspritz.app.FullscreenActivity2"
+            android:name=".ChapterChooser"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_fullscreen_activity2"
-            android:parentActivityName="com.arphen.ownspritz.app.FullscreenActivity"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
+            android:parentActivityName=".MainActivity"
+            android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="FullscreenActivity" />

@@ -10,57 +10,59 @@ import android.widget.TextView;
  * TODO: document your custom view class.
  */
 public class BlinkAnnouncement extends TextView {
+    private Runnable hide;
+    private Runnable show;
+    private boolean onTop = false;
+
     public BlinkAnnouncement(Context context) {
         super(context);
         init(null, 0);
     }
-
     public BlinkAnnouncement(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(attrs, 0);
     }
-
     public BlinkAnnouncement(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init(attrs, defStyle);
     }
 
-    private Runnable hide;
-    private Runnable show;
-    private boolean onTop=false;
+    public void hide() {
+        removeCallbacks(hide);
+        postDelayed(hide, 3000);
+        onTop = false;
+    }
 
-    public  void hide(){
+    public void showperm() {
+        onTop = true;
         removeCallbacks(hide);
-        postDelayed(hide,3000);
-        onTop=false;
+        postDelayed(show, 0);
     }
-    public  void showperm(){
-        onTop=true;
-        removeCallbacks(hide);
-        postDelayed(show,0);
-    }
-    public  void show(){
-        if(!onTop) {
+
+    public void show() {
+        if (!onTop) {
             removeCallbacks(hide);
             postDelayed(show, 0);
             hide();
         }
     }
+
     private void init(AttributeSet attrs, int defStyle) {
-        hide=new Runnable() {
+        hide = new Runnable() {
             @Override
             public void run() {
                 animate().alpha(0f).setDuration(1000).setListener(null);
             }
         };
-        show=new Runnable() {
+        show = new Runnable() {
             @Override
             public void run() {
                 animate().alpha(1f).setDuration(1000).setListener(null);
             }
         };
     }
-    protected void onDraw (Canvas canvas) {
+
+    protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
     }
 
