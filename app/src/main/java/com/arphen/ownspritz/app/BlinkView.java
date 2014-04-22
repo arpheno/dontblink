@@ -13,10 +13,11 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class SpritzView extends RelativeLayout implements View.OnClickListener {
-    public Spritzer gen;
+public class BlinkView extends RelativeLayout implements View.OnClickListener {
+    public Blinker gen;
     private TextView left;
     private TextView middle;
+    private BlinkProgressBar sb;
     private TextView right;
     private Thread timer;
     private double m_wpm = 500;
@@ -25,14 +26,23 @@ public class SpritzView extends RelativeLayout implements View.OnClickListener {
     private boolean m_init;
     private Paint paint;
 
-    public SpritzView(Context context, AttributeSet attrs) {
+    public BlinkView(Context context, AttributeSet attrs) {
         super(context, attrs);
         View view = LayoutInflater.from(context).inflate(R.layout.spritzview, this, true);
         left = (TextView) findViewById(R.id.textView);
         middle = (TextView) findViewById(R.id.textView2);
         right = (TextView) findViewById(R.id.textView3);
     }
-
+    public void setProgressBar(BlinkProgressBar k){
+        sb=k;
+    }
+    public String getPreview(int which) {
+        if (which == 0) {
+            return gen.getPreview(0);
+        } else {
+            return gen.getPreview(1);
+        }
+    }
     public boolean is_init() {
         return m_init;
     }
@@ -46,17 +56,31 @@ public class SpritzView extends RelativeLayout implements View.OnClickListener {
     }
 
     public void init(InputStream in) throws IOException {
-        Log.i("Spritzer", "Initializing Spritzer");
-        gen = new Spritzer(in);
+        Log.i("Blinker", "Initializing Blinker");
+        gen = new Blinker(in);
         m_init = true;
     }
 
     public void setText(String word) {
         int piv = m_getpivot(word);
-        left.setText(word.substring(0, piv));
-        middle.setText(word.substring(piv, piv + 1));
-        right.setText(word.substring(piv + 1));
-    }
+        try{
+            left.setText(word.substring(0, piv));
+        }catch (StringIndexOutOfBoundsException a){
+            left.setText("");
+        }
+        try{
+            middle.setText(word.substring(piv, piv + 1));
+        }catch (StringIndexOutOfBoundsException a){
+            middle .setText("");
+        }
+
+        try {
+            right.setText(word.substring(piv + 1));
+        }catch (StringIndexOutOfBoundsException a){
+        right.setText("");
+
+        }
+        }
 
     private int m_getpivot(String s) {
         switch (s.length()) {
@@ -96,6 +120,7 @@ public class SpritzView extends RelativeLayout implements View.OnClickListener {
             public void run() {
                 while (m_playing) {
                     m_word = gen.next((int) Math.signum(m_wpm));
+                    sb.setProgress(gen.m_wordindex);
                     post(new Runnable() {
                         @Override
                         public void run() {
@@ -109,7 +134,9 @@ public class SpritzView extends RelativeLayout implements View.OnClickListener {
                         if (m_word.contains(","))
                             delaymult *= 1.3;
                         if (m_word.length() > 6)
-                            delaymult *= 1.6;
+                            delaymult *= 1.3;
+                        if (m_word.length() > 10)
+                            delaymult *= 1.3;
                         Thread.sleep((long) (delaymult * 60000 / m_wpm));
 
                     } catch (InterruptedException e) {

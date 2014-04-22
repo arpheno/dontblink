@@ -4,6 +4,23 @@
     android:layout_height="match_parent"
     android:background="#000000"
     tools:context="com.arphen.ownspritz.app.MainActivity">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="98dp"
+        android:textSize="25dp"
+        android:textColor="#AAAAAA"
+        android:id="@+id/previewTop"
+        android:layout_gravity="center_horizontal|top" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="98dp"
+        android:id="@+id/previewBot"
+        android:textColor="#AAAAAA"
+        android:textSize="25dp"
+        android:layout_gravity="center_horizontal|bottom" />
+
+
     <com.arphen.ownspritz.app.BlinkButton
         android:layout_width="44dp"
         android:layout_height="44dp"
@@ -44,13 +61,12 @@
         android:layout_marginLeft="80dp" />
 
     <com.arphen.ownspritz.app.BlinkProgressBar
-        android:layout_width="324dp"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:id="@+id/seekBar"
-        android:layout_gravity="center"
-        android:layout_marginTop="100dp" />
+        android:layout_gravity="center_horizontal|bottom"/>
 
-    <com.arphen.ownspritz.app.SpritzView
+    <com.arphen.ownspritz.app.BlinkView
         android:id="@+id/spritzview"
         android:layout_width="577dp"
         android:layout_height="72dp"

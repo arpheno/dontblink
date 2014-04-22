@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.View;
@@ -36,12 +35,14 @@ public class MainActivity extends Activity{
     private int height;
     private int width;
     private TextView wpmtv;
-    private SpritzView tv;
+    private BlinkView tv;
     private int interact_sb;
     private BlinkButton chapterbutton;
     private BlinkButton filebutton;
     private BlinkAnnouncement an;
     private BlinkNumberPicker np;
+    private TextView pt;
+    private TextView pb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,18 +50,15 @@ public class MainActivity extends Activity{
         setContentView(R.layout.main_activity);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        tv = (SpritzView) findViewById(R.id.spritzview);
+        tv = (BlinkView) findViewById(R.id.spritzview);
         sb = (BlinkProgressBar) findViewById(R.id.seekBar);
         an = (BlinkAnnouncement) findViewById(R.id.announcement);
         np= (BlinkNumberPicker) findViewById(R.id.numberPicker);
+        pt= (TextView)findViewById(R.id.previewTop);
+        pb= (TextView)findViewById(R.id.previewBot);
         chapterbutton = (BlinkButton) findViewById(R.id.chapter);
         filebutton = (BlinkButton) this.findViewById(R.id.cf);
         //Metrics
-        DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(dm);
-        width = dm.widthPixels;
-        height = dm.heightPixels;
-        wpmthresh = (0.7 * width);
         np.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
             public void onValueChange(NumberPicker numberPicker, int i, int i2) {
@@ -81,6 +79,7 @@ public class MainActivity extends Activity{
                 }
             }
         });
+        tv.setProgressBar(sb);
         sb.setOnSeekBarChangeListener(
                 new SeekBar.OnSeekBarChangeListener() {
                     @Override
@@ -88,6 +87,8 @@ public class MainActivity extends Activity{
                         if (!arg2)
                             return;
                         tv.setPosition(arg1);
+                        pt.setText(tv.getPreview(0));
+                        pb.setText(tv.getPreview(1));
                         tv.stop();
                         sb.show();
                     }
@@ -95,7 +96,7 @@ public class MainActivity extends Activity{
                     @Override
                     public void onStartTrackingTouch(SeekBar seekBar) {
                         sb.show();
-                    }
+                        }
 
                     @Override
                     public void onStopTrackingTouch(SeekBar seekBar) {
@@ -103,7 +104,6 @@ public class MainActivity extends Activity{
                     }
                 }
         );
-
         filebutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -176,6 +176,8 @@ public void chapterFromBeginning(int c){
         chapterbutton.hide();
         filebutton.hide();
         np.hide();
+        pt.setText("");
+        pb.setText("");
         tv.run();
     }
 
@@ -184,6 +186,8 @@ public void chapterFromBeginning(int c){
         sb.setMax(tv.getLengthOfChapter());
         sb.showperm();
         np.showperm();
+        pt.setText(tv.getPreview(0));
+        pb.setText(tv.getPreview(1));
         chapterbutton.showperm();
         filebutton.showperm();
     }

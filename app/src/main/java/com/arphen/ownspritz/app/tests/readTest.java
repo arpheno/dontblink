@@ -3,7 +3,7 @@ package com.arphen.ownspritz.app.tests;
 import android.test.InstrumentationTestCase;
 import android.util.Log;
 
-import com.arphen.ownspritz.app.Spritzer;
+import com.arphen.ownspritz.app.Blinker;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,7 +21,7 @@ public class readTest extends InstrumentationTestCase {
             Log.i("kk", filee.getAbsolutePath());
             if(filee.getAbsolutePath().contains(".epub")) {
                 InputStream in = new FileInputStream(filee);
-                 Spritzer k = new Spritzer(in);
+                 Blinker k = new Blinker(in);
             }
         }
     }
