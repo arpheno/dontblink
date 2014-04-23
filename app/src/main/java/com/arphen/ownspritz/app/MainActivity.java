@@ -7,6 +7,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.NumberPicker;
@@ -18,6 +21,9 @@ import com.arphen.ownspritz.app.util.SystemUiHider;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import static com.arphen.ownspritz.app.R.id.action_choose_chapter;
+import static com.arphen.ownspritz.app.R.id.action_choose_file;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -37,8 +43,6 @@ public class MainActivity extends Activity{
     private TextView wpmtv;
     private BlinkView tv;
     private int interact_sb;
-    private BlinkButton chapterbutton;
-    private BlinkButton filebutton;
     private BlinkAnnouncement an;
     private BlinkNumberPicker np;
     private TextView pt;
@@ -50,15 +54,13 @@ public class MainActivity extends Activity{
         setContentView(R.layout.main_activity);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        getActionBar().setBackgroundDrawable(null);
         tv = (BlinkView) findViewById(R.id.spritzview);
         sb = (BlinkProgressBar) findViewById(R.id.seekBar);
         an = (BlinkAnnouncement) findViewById(R.id.announcement);
         np= (BlinkNumberPicker) findViewById(R.id.numberPicker);
         pt= (TextView)findViewById(R.id.previewTop);
         pb= (TextView)findViewById(R.id.previewBot);
-        chapterbutton = (BlinkButton) findViewById(R.id.chapter);
-        filebutton = (BlinkButton) this.findViewById(R.id.cf);
-        //Metrics
         np.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
             public void onValueChange(NumberPicker numberPicker, int i, int i2) {
@@ -104,38 +106,44 @@ public class MainActivity extends Activity{
                     }
                 }
         );
-        filebutton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle presses on the action bar items
+        switch (item.getItemId()) {
+            case action_choose_file:
                 Intent chooseFile;
                 Intent intent;
                 chooseFile = new Intent(Intent.ACTION_GET_CONTENT);
                 chooseFile.setType("file/*");
                 intent = Intent.createChooser(chooseFile, "Choose a file");
                 startActivityForResult(intent, ACTIVITY_CHOOSE_FILE);
-            }
-        });
-        chapterbutton.setOnClickListener(new View.OnClickListener() {
-
-
-            @Override
-            public void onClick(View v) {
+                return true;
+            case action_choose_chapter:
                 Intent chooseChapter;
-                Intent intent;
                 chooseChapter = new Intent(getApplicationContext(), ChapterChooser.class);
                 int chapters = tv.getNumberOfChapters();
                 chooseChapter.putExtra("chapters", chapters);
                 if (chapters != 0)
                     startActivityForResult(chooseChapter, ACTIVITY_CHOOSE_CHAPTER);
-            }
-        });
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     public void announce(String what) {
         an.setText(what);
         an.show();
     }
-
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu items for use in the action bar
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_activity_action, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
@@ -173,9 +181,8 @@ public void chapterFromBeginning(int c){
 }
     public void runTV() {
         sb.hide();
-        chapterbutton.hide();
-        filebutton.hide();
         np.hide();
+        getActionBar().hide();
         pt.setText("");
         pb.setText("");
         tv.run();
@@ -184,11 +191,10 @@ public void chapterFromBeginning(int c){
     public void stopTV() {
         tv.stop();
         sb.setMax(tv.getLengthOfChapter());
+        getActionBar().show();
         sb.showperm();
         np.showperm();
         pt.setText(tv.getPreview(0));
         pb.setText(tv.getPreview(1));
-        chapterbutton.showperm();
-        filebutton.showperm();
     }
 }

@@ -1,5 +1,6 @@
 package com.arphen.ownspritz.app;
 
+import android.os.AsyncTask;
 import android.text.Html;
 import android.util.Log;
 
@@ -24,30 +25,19 @@ public class Blinker {
     private int m_chapterindex = 0;
     private String[] m_chapter;
     private double m_wpm = 500;
+    private boolean m_init = false;
 
-    public Blinker(InputStream epubInputStream) throws IOException {
-        m_book = (new EpubReader()).readEpub(epubInputStream);
-        m_chapters = new ArrayList<String[]>();
-        for (SpineReference ref: m_book.getSpine().getSpineReferences()) {
-            Resource resource = ref.getResource();
-            String decoded = new String(resource.getData(), resource.getInputEncoding());
-            //decoded = android.text.Html.fromHtml(decoded);
-            if (decoded.contains("<body")) {
-                decoded = decoded.substring(decoded.indexOf("<body"));
-            } else {
-                decoded = " ";
-            }
-            decoded = Html.fromHtml(decoded).toString().replace("\n", " ").replaceAll("(?s)<!--.*?-->", "");
-            Log.i("xml", decoded);
-            String[] temp = decoded.split("(?<=[\\s.,?!-])");
-            for(int i=0;i<temp.length;i++){
-                temp[i]=temp[i].replaceAll("\\s","");
-            }
-            m_chapters.add(temp);
-        }
-        setChapter(m_chapterindex);
+    public Blinker() {
+
     }
-
+public void init(InputStream epubInputStream) throws IOException {
+    m_book = (new EpubReader()).readEpub(epubInputStream);
+    m_chapters = new ArrayList<String[]>();
+    for (SpineReference ref: m_book.getSpine().getSpineReferences()) {
+        Log.i("Chapter","loading");
+        new LoadChapter().execute(ref);
+    }
+}
     public static List<String> splitEqually(String text, int size) {
         // Give the list the right capacity to start with. You could use an array
         // instead if you wanted.
@@ -80,6 +70,7 @@ public class Blinker {
         }
     }
     public String next(int dir) {
+        if(!m_init)return " ";
         m_wordindex += dir;
         if (m_wordindex >= m_chapter.length) {
             if(m_chapterindex<m_chapters.size()-1) {
@@ -115,8 +106,8 @@ public class Blinker {
     }
 
     public String setM_wordindex(int i) {
-        m_wordindex = i;
-        return m_chapter[m_wordindex];
+        m_wordindex = i-1;
+        return next(1);
     }
 
     public void setChapter(int c) {
@@ -137,5 +128,45 @@ public class Blinker {
             }
         }
         return cont.toArray(new String[cont.size()]);
+    }
+    public boolean isM_init(){return m_init;}
+    class LoadChapter extends AsyncTask<SpineReference, Integer, Long> {
+        protected void onProgressUpdate(Integer... progress) {
+
+        }
+
+        @Override
+        protected Long doInBackground(SpineReference... spineReferences) {
+            Resource resource = spineReferences[0].getResource();
+            String decoded = null;
+            try {
+                decoded = new String(resource.getData(), resource.getInputEncoding());
+            } catch (IOException e) {
+                Log.e("Error","Failed to decode");
+                e.printStackTrace();
+            }
+            if (decoded.contains("<body")) {
+                decoded = decoded.substring(decoded.indexOf("<body"));
+            } else {
+                decoded = " ";
+            }
+            decoded = Html.fromHtml(decoded).toString().replace("\n", " ").replaceAll("(?s)<!--.*?-->", "");
+            String[] temp = decoded.split("([\\s(?<=[.,?!-])])");
+            if(m_chapters.isEmpty()) {
+                m_chapters.add(temp);
+                setChapter(0);
+            }else{
+                m_chapters.add(temp);
+            }
+            return null;
+        }
+
+        protected void onPostExecute(Long result) {
+            Log.i("Async","Setting init to true");
+            m_init=true;
+        }
+
+
+
     }
 }

@@ -6,12 +6,11 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/CustomActionBarTheme" >
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/app_name"
-            android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen" >
+            android:label="Don'tblink" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -21,9 +20,8 @@
         <activity
             android:name=".ChapterChooser"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/title_activity_fullscreen_activity2"
-            android:parentActivityName=".MainActivity"
-            android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen" >
+            android:label="Chapters"
+            android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="FullscreenActivity" />

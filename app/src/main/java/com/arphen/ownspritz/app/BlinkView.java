@@ -29,6 +29,7 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
     public BlinkView(Context context, AttributeSet attrs) {
         super(context, attrs);
         View view = LayoutInflater.from(context).inflate(R.layout.spritzview, this, true);
+        gen = new Blinker();
         left = (TextView) findViewById(R.id.textView);
         middle = (TextView) findViewById(R.id.textView2);
         right = (TextView) findViewById(R.id.textView3);
@@ -44,7 +45,7 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
         }
     }
     public boolean is_init() {
-        return m_init;
+        return gen.isM_init();
     }
 
     public boolean is_playing() {
@@ -57,8 +58,7 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
 
     public void init(InputStream in) throws IOException {
         Log.i("Blinker", "Initializing Blinker");
-        gen = new Blinker(in);
-        m_init = true;
+        gen.init(in);
     }
 
     public void setText(String word) {
@@ -108,12 +108,12 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
     }
 
     public void setChapter(int c) {
-        if (!m_init) return;
+        if (!gen.isM_init()) return;
         gen.setChapter(c);
     }
 
     public void run() {
-        if (!m_init) return;
+        if (!gen.isM_init()) return;
         m_playing = true;
         timer = new Thread(new Runnable() {
             @Override
@@ -149,12 +149,13 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
     }
 
     public void setPosition(int position) {
-        if (m_init)
-            setText(gen.setM_wordindex(position));
+        if (gen.isM_init()) {
+                setText(gen.setM_wordindex(position));
+        }
     }
 
     public int getNumberOfChapters() {
-        if (!m_init)
+        if (!gen.isM_init())
             return 0;
         return gen.getBooklength();
     }
@@ -177,13 +178,13 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
     }
 
     public int getCurrentPosition() {
-        if (m_init)
+        if (gen.isM_init())
             return gen.m_wordindex;
         return 0;
     }
 
     public int getLengthOfChapter() {
-        if (m_init)
+        if (gen.isM_init())
             return gen.getLengthOfChapter();
         return 5;
     }

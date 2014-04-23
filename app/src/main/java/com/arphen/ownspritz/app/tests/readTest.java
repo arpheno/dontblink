@@ -1,13 +1,8 @@
 package com.arphen.ownspritz.app.tests;
 
 import android.test.InstrumentationTestCase;
-import android.util.Log;
-
-import com.arphen.ownspritz.app.Blinker;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 
 /**
@@ -17,14 +12,11 @@ public class readTest extends InstrumentationTestCase {
     public void test() throws Exception {
         ArrayList<File> f = new ArrayList<File>();
         listf("/storage/sdcard1/kobo/",f);
-        for(File filee: f) {
-            Log.i("kk", filee.getAbsolutePath());
-            if(filee.getAbsolutePath().contains(".epub")) {
-                InputStream in = new FileInputStream(filee);
-                 Blinker k = new Blinker(in);
-            }
-        }
+        String t="Hello dear world. How are you today? I'm doing quite fine, I hope you too.";
+        String[] temp = t.split("([\\s(?<=[.,?!-])])");
+
     }
+
     public void listf(String directoryName, ArrayList<File> files) {
         File directory = new File(directoryName);
 

@@ -6,59 +6,54 @@
     tools:context="com.arphen.ownspritz.app.MainActivity">
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="98dp"
-        android:textSize="25dp"
+        android:layout_height="63dp"
+        android:textSize="20dp"
         android:textColor="#AAAAAA"
         android:id="@+id/previewTop"
+        android:layout_marginTop="?android:actionBarSize"
         android:layout_gravity="center_horizontal|top" />
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="98dp"
+        android:layout_height="52dp"
         android:id="@+id/previewBot"
         android:textColor="#AAAAAA"
-        android:textSize="25dp"
-        android:layout_gravity="center_horizontal|bottom" />
+        android:textSize="20dp"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_marginBottom="20dp" />
 
-
-    <com.arphen.ownspritz.app.BlinkButton
-        android:layout_width="44dp"
-        android:layout_height="44dp"
-        android:text="Choose File"
-        android:id="@+id/cf"
-        android:layout_gravity="left|top"
-        android:src="@drawable/choose_file"
-        android:layout_marginTop="20dp"
-        android:layout_marginLeft="20dp"
-        android:background="#000000" />
+    <View
+        android:layout_width="400dp"
+        android:layout_height="3dp"
+        android:id="@+id/line4"
+        android:background="@android:color/white"
+        android:layout_gravity="center"
+        android:layout_marginBottom="45dp"
+        android:layout_marginRight="50dp" />
+    <View
+        android:layout_width="400dp"
+        android:layout_height="3dp"
+        android:id="@+id/line3"
+        android:background="@android:color/white"
+        android:layout_gravity="center"
+        android:layout_marginTop="40dp"
+        android:layout_marginRight="50dp" />
     <View
         android:layout_width="1dp"
-        android:layout_height="30dp"
+        android:layout_height="15dp"
         android:id="@+id/line2"
         android:background="@android:color/white"
         android:layout_gravity="center"
-        android:layout_marginTop="45dp"
+        android:layout_marginTop="30dp"
         android:layout_marginRight="100dp" />
     <View
         android:layout_width="1dp"
-        android:layout_height="30dp"
+        android:layout_height="15dp"
         android:background="@android:color/white"
         android:id="@+id/line1"
         android:layout_gravity="center"
-        android:layout_marginBottom="45dp"
+        android:layout_marginBottom="35dp"
         android:layout_marginRight="100dp"/>
-
-    <com.arphen.ownspritz.app.BlinkButton
-        android:layout_width="54dp"
-        android:layout_height="48dp"
-        android:text="Choose Chapter"
-        android:id="@+id/chapter"
-        android:layout_gravity="left|top"
-        android:src="@drawable/choose_chapter"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="18dp"
-        android:background="#000000"
-        android:layout_marginLeft="80dp" />
 
     <com.arphen.ownspritz.app.BlinkProgressBar
         android:layout_width="fill_parent"
