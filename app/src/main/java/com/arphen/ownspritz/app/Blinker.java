@@ -26,9 +26,17 @@ public class Blinker {
     private String[] m_chapter;
     private double m_wpm = 500;
     private boolean m_init = false;
-
+    private ArrayList<OnChapterChangedListener> chapterChangedListeners;
     public Blinker() {
-
+        chapterChangedListeners= new ArrayList<OnChapterChangedListener>();
+    }
+    public void addChapterChangedListener(OnChapterChangedListener listener){
+        chapterChangedListeners.add(listener);
+    }
+    public String getAuthorTitle(){
+        String tmp= String.valueOf(m_book.getMetadata().getAuthors());
+        String tmp2=tmp+m_book.getMetadata().getTitles();
+        return tmp2;
     }
 public void init(InputStream epubInputStream) throws IOException {
     m_book = (new EpubReader()).readEpub(epubInputStream);
@@ -115,6 +123,9 @@ public void init(InputStream epubInputStream) throws IOException {
         m_chapterindex = c;
         m_chapter = m_chapters.get(c);//breakUpWords(m_chapters.get(c));
         m_wordindex = 0;
+        for (OnChapterChangedListener l: chapterChangedListeners){
+            l.onChapterChanged(c,m_chapter.length);
+        }
     }
 
     private String[] breakUpWords(String[] what) {

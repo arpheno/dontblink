@@ -11,7 +11,8 @@
         android:textColor="#AAAAAA"
         android:id="@+id/previewTop"
         android:layout_marginTop="?android:actionBarSize"
-        android:layout_gravity="center_horizontal|top" />
+        android:layout_gravity="center_horizontal|top"
+        android:gravity="center_horizontal|top" />
 
     <TextView
         android:layout_width="match_parent"
@@ -20,7 +21,8 @@
         android:textColor="#AAAAAA"
         android:textSize="20dp"
         android:layout_gravity="center_horizontal|bottom"
-        android:layout_marginBottom="20dp" />
+        android:layout_marginBottom="56dp"
+        android:gravity="center_horizontal|top" />
 
     <View
         android:layout_width="400dp"
@@ -68,21 +70,6 @@
         android:layout_marginRight="100dp"
         android:layout_gravity="center"
         android:gravity="center_vertical" />
-    <view
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        class="com.arphen.ownspritz.app.BlinkAnnouncement"
-        android:id="@+id/announcement"
-        android:layout_gravity="left|top"
-        android:text="Hallo Welt"
-        android:layout_marginLeft="165dp"
-        android:layout_marginTop="43dp"
-        android:gravity="left"
-        android:textColor="#faff00"
-        android:typeface="sans"
-        android:textStyle="bold"
-        android:textSize="25dp"
-        android:alpha="0" />
 
     <com.arphen.ownspritz.app.BlinkNumberPicker
         android:layout_width="wrap_content"
@@ -90,6 +77,30 @@
         android:id="@+id/numberPicker"
         android:layout_gravity="right|center_vertical" />
 
+    <view
+        android:layout_width="wrap_content"
+        android:layout_height="?android:actionBarSize"
+        class="com.arphen.ownspritz.app.BlinkAnnouncement"
+        android:id="@+id/announcement"
+        android:layout_gravity="center_horizontal|top"
+        android:text="Hallo Welt"
+        android:gravity="center_vertical|left"
+        android:textColor="#00a3ff"
+        android:typeface="sans"
+        android:textSize="20dp"
+        android:alpha="0"
+        android:textStyle="bold"
+        android:textIsSelectable="false" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="25dp"
+        android:id="@+id/authortitle"
+        android:textColor="#FFFFFF"
+        android:textSize="20dp"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_marginBottom="20dp"
+        android:gravity="left" />
 
     <!-- This FrameLayout insets its children based on system windows using
          android:fitsSystemWindows. -->

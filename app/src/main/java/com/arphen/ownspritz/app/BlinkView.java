@@ -44,6 +44,9 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
             return gen.getPreview(1);
         }
     }
+    public void registerChapterChangedListener(OnChapterChangedListener l){
+        gen.addChapterChangedListener(l);
+    }
     public boolean is_init() {
         return gen.isM_init();
     }

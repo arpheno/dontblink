@@ -82,6 +82,8 @@ public class MainActivity extends Activity{
             }
         });
         tv.setProgressBar(sb);
+        tv.registerChapterChangedListener(sb);
+        tv.registerChapterChangedListener(an);
         sb.setOnSeekBarChangeListener(
                 new SeekBar.OnSeekBarChangeListener() {
                     @Override

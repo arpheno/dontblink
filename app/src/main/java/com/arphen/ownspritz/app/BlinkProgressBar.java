@@ -9,7 +9,7 @@ import android.widget.SeekBar;
 /**
  * TODO: document your custom view class.
  */
-public class BlinkProgressBar extends SeekBar {
+public class BlinkProgressBar extends SeekBar implements OnChapterChangedListener {
 
     private Runnable hide;
     private Runnable show;
@@ -68,4 +68,10 @@ public class BlinkProgressBar extends SeekBar {
         };
     }
 
+    @Override
+    public void onChapterChanged(int c,int l) {
+        setProgress(0);
+        setMax(l);
+        post(show);
+    }
 }

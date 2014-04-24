@@ -9,7 +9,7 @@ import android.widget.TextView;
 /**
  * TODO: document your custom view class.
  */
-public class BlinkAnnouncement extends TextView {
+public class BlinkAnnouncement extends TextView implements OnChapterChangedListener{
 
     public BlinkAnnouncement(Context context) {
         super(context);
@@ -54,6 +54,7 @@ public class BlinkAnnouncement extends TextView {
                 animate().alpha(0f).setDuration(1000).setListener(null);
             }
         };
+
         show = new Runnable() {
             @Override
             public void run() {
@@ -66,4 +67,15 @@ public class BlinkAnnouncement extends TextView {
         super.onDraw(canvas);
     }
 
+    @Override
+    public void onChapterChanged(final int c, final int l) {
+        post(new Runnable() {
+            @Override
+            public void run() {
+                setText("Chapter "+String.valueOf(c));
+            }
+        });
+
+        show();
+    }
 }
