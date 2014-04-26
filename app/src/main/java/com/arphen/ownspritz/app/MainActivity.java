@@ -87,6 +87,7 @@ public class MainActivity extends Activity implements RunningListener {
         tv.addChapterChangedListener(sb);
         tv.addChapterChangedListener(an);
         tv.addRunningListener(sb);
+        tv.addRunningListener(this);
         tv.addRunningListener(np);
         sb.setOnSeekBarChangeListener(
                 new SeekBar.OnSeekBarChangeListener() {
@@ -189,11 +190,18 @@ public class MainActivity extends Activity implements RunningListener {
         }
     }
     public void running(Boolean running) {
-        if(running)
-            getActionBar().hide();
-        else
-            getActionBar().show();
-
+        if(running) {
+            View decorView = getWindow().getDecorView();
+// Hide the status bar.
+            int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN+View.SYSTEM_UI_FLAG_LAYOUT_STABLE+View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+            decorView.setSystemUiVisibility(uiOptions);
+            //getActionBar().hide();
+        }else {
+            View decorView = getWindow().getDecorView();
+// Hide the status bar.
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN+View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+            //getActionBar().show();
+        }
     }
     public void runTV() {
         pt.setText("");
