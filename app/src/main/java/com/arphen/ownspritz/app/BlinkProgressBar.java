@@ -3,6 +3,7 @@ package com.arphen.ownspritz.app;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.SeekBar;
 
 
@@ -70,6 +71,7 @@ public class BlinkProgressBar extends SeekBar implements OnChapterChangedListene
 
     @Override
     public void onChapterChanged(int c,int l) {
+        Log.i("Progress","Chapter changed");
         setProgress(0);
         setMax(l);
         show();

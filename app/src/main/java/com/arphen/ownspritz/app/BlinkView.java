@@ -24,8 +24,8 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
     private String m_word;
     private boolean m_init;
     private ArrayList<RunningListener> runningListeners;
-    private int m_pos;
-    private int m_chapter;
+    private int m_pos=0;
+    private int m_chapter=-1; // Needs to be initialized to -1 so we get a chapter changed event.
     private ArrayList<OnChapterChangedListener> chapterChangedListeners;
 
     public BlinkView(Context context, AttributeSet attrs) {
@@ -38,17 +38,25 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
         runningListeners=new ArrayList<RunningListener>();
         chapterChangedListeners= new ArrayList<OnChapterChangedListener>();
     }
-    public String getPreview(int which) {
+
+    /**
+     * Gets amount words from the book starting at current position + offset
+     * @param offset how far to offset(useful for previewing already read items)
+     * @param amount how many words should be returned
+     * @return A String with amount of words.
+     */
+    public String getPreview(int offset, int amount) {
             String result = "";
             String tempres;
-            int temppos = m_pos-which;
+            int temppos = m_pos+offset;
             int tempchap =m_chapter;
             if(temppos<0) {
                 tempchap = m_chapter - 1;
+                if(tempchap<0)return "";
                 gen.getWord(tempchap, 0);
                 temppos = gen.getLengthOfChapter(tempchap)-temppos;
             }
-            for(int i=0;i<Math.abs(which);i++,temppos++){
+            for(int i=0;i<amount;i++,temppos++){
                 tempres = gen.getWord(tempchap, temppos);
                 if(tempres==""){
                     tempchap++;
@@ -111,12 +119,18 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
             case 5:
             case 4:
             case 3:
+                left.setText(word.substring(0, 1));
+                middle.setText(word.substring(1,2));
                 right.setText(word.substring(2));
+                break;
             case 2:
+                right.setText("");
                 left.setText(word.substring(0, 1));
                 middle.setText(word.substring(1,2));
                 break;
             case 1:
+                right.setText("");
+                left.setText("");
                 middle.setText(word);
                 break;
             case 0:
@@ -132,7 +146,14 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
 
     public void setChapter(int c) {
         if (!gen.isM_init()) return;
+        Log.i("BlinkView","Notifying chapterchangedlisteners");
         m_chapter=c;
+        m_pos=0;
+        setText(gen.getWord(m_chapter,0));// Get first word of new chapter
+        for (OnChapterChangedListener l: chapterChangedListeners){
+
+            l.onChapterChanged(m_chapter,gen.getLengthOfChapter(m_chapter));
+        }
     }
 
     private String next(){
@@ -144,9 +165,11 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
                 stop(); // Stop playing and notify listeners
                 return "End of Book";
             }
-            m_pos=0;
+            m_pos=-1;
+            Log.i("BlinkView","Notifying chapterchangedlisteners");
             temp=gen.getWord(m_chapter,0);// Get first word of new chapter
             for (OnChapterChangedListener l: chapterChangedListeners){
+
                 l.onChapterChanged(m_chapter,gen.getLengthOfChapter(m_chapter));
             }
         }
@@ -162,7 +185,7 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
             public void run() {
                 while (m_playing) {
                     m_word = next();
-                    //sb.setProgress(gen.m_wordindex);
+                    //sb.setProgress(m_pos);
                     post(new Runnable() {
                         @Override
                         public void run() {

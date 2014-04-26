@@ -86,7 +86,6 @@ public class MainActivity extends Activity implements RunningListener {
         at= (BlinkAnnouncement) findViewById(R.id.authortitle);
         tv.addChapterChangedListener(sb);
         tv.addChapterChangedListener(an);
-        tv.addRunningListener(this);
         tv.addRunningListener(sb);
         tv.addRunningListener(np);
         sb.setOnSeekBarChangeListener(
@@ -96,8 +95,8 @@ public class MainActivity extends Activity implements RunningListener {
                         if (!arg2)
                             return;
                         tv.setPosition(arg1);
-                        pt.setText(tv.getPreview(0));
-                        pb.setText(tv.getPreview(1));
+                        pt.setText(tv.getPreview(-15,15));
+                        pb.setText(tv.getPreview(1,20));
                         tv.stop();
                     }
 
@@ -197,14 +196,14 @@ public class MainActivity extends Activity implements RunningListener {
 
     }
     public void runTV() {
-    //    pt.setText("");
-      //  pb.setText("");
+        pt.setText("");
+        pb.setText("");
         tv.run();
     }
 
     public void stopTV() {
-//        pt.setText(tv.getPreview(0));
-  //      pb.setText(tv.getPreview(1));
+        pt.setText(tv.getPreview(-15,15));
+        pb.setText(tv.getPreview(1,20));
         tv.stop();
     }
 }
