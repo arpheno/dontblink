@@ -2,7 +2,6 @@ package com.arphen.ownspritz.app;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,19 +11,22 @@ import android.widget.TextView;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 public class BlinkView extends RelativeLayout implements View.OnClickListener {
     public Blinker gen;
     private TextView left;
     private TextView middle;
-    private BlinkProgressBar sb;
     private TextView right;
     private Thread timer;
     private double m_wpm = 500;
     private boolean m_playing;
     private String m_word;
     private boolean m_init;
-    private Paint paint;
+    private ArrayList<RunningListener> runningListeners;
+    private int m_pos;
+    private int m_chapter;
+    private ArrayList<OnChapterChangedListener> chapterChangedListeners;
 
     public BlinkView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -33,20 +35,37 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
         left = (TextView) findViewById(R.id.textView);
         middle = (TextView) findViewById(R.id.textView2);
         right = (TextView) findViewById(R.id.textView3);
-    }
-    public void setProgressBar(BlinkProgressBar k){
-        sb=k;
+        runningListeners=new ArrayList<RunningListener>();
+        chapterChangedListeners= new ArrayList<OnChapterChangedListener>();
     }
     public String getPreview(int which) {
-        if (which == 0) {
-            return gen.getPreview(0);
-        } else {
-            return gen.getPreview(1);
-        }
+            String result = "";
+            String tempres;
+            int temppos = m_pos-which;
+            int tempchap =m_chapter;
+            if(temppos<0) {
+                tempchap = m_chapter - 1;
+                gen.getWord(tempchap, 0);
+                temppos = gen.getLengthOfChapter(tempchap)-temppos;
+            }
+            for(int i=0;i<Math.abs(which);i++,temppos++){
+                tempres = gen.getWord(tempchap, temppos);
+                if(tempres==""){
+                    tempchap++;
+                    tempres = gen.getWord(tempchap, temppos);
+                }
+                result+=tempres;
+                result+=" ";
+            }
+        return result;
     }
-    public void registerChapterChangedListener(OnChapterChangedListener l){
-        gen.addChapterChangedListener(l);
+    public void addRunningListener(RunningListener listener){
+        runningListeners.add(listener);
     }
+    public void addChapterChangedListener(OnChapterChangedListener listener){
+        chapterChangedListeners.add(listener);
+    }
+
     public boolean is_init() {
         return gen.isM_init();
     }
@@ -64,66 +83,86 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
         gen.init(in);
     }
 
+    /**
+     * Set's the current display content to word.
+     * In accordance with the length of the word one character
+     * will be chosen as pivot and marked red.
+     *
+     * @param word
+     */
     public void setText(String word) {
-        int piv = m_getpivot(word);
-        try{
-            left.setText(word.substring(0, piv));
-        }catch (StringIndexOutOfBoundsException a){
-            left.setText("");
-        }
-        try{
-            middle.setText(word.substring(piv, piv + 1));
-        }catch (StringIndexOutOfBoundsException a){
-            middle .setText("");
-        }
-
-        try {
-            right.setText(word.substring(piv + 1));
-        }catch (StringIndexOutOfBoundsException a){
-        right.setText("");
-
-        }
-        }
-
-    private int m_getpivot(String s) {
-        switch (s.length()) {
-            case 0:
-            case 1:
-                return 0;
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-                return 1;
-            case 6:
-            case 7:
-            case 8:
-            case 9:
-                return 2;
-            case 10:
-            case 11:
-            case 12:
+        switch (word.length()) {
             case 13:
-                return 3;
+            case 12:
+            case 11:
+            case 10:
+                left.setText(word.substring(0, 3));
+                middle.setText(word.substring(3, 4));
+                right.setText(word.substring(4));
+                break;
+            case 9:
+            case 8:
+            case 7:
+            case 6:
+                left.setText(word.substring(0, 2));
+                middle.setText(word.substring(2, 3));
+                right.setText(word.substring(3));
+                break;
+            case 5:
+            case 4:
+            case 3:
+                right.setText(word.substring(2));
+            case 2:
+                left.setText(word.substring(0, 1));
+                middle.setText(word.substring(1,2));
+                break;
+            case 1:
+                middle.setText(word);
+                break;
+            case 0:
+                break;
             default:
-                return 4;
+                left.setText(word.substring(0, 4));
+                middle.setText(word.substring(4, 5));
+                right.setText(word.substring(5));
+                break;
+
         }
     }
 
     public void setChapter(int c) {
         if (!gen.isM_init()) return;
-        gen.setChapter(c);
+        m_chapter=c;
     }
 
+    private String next(){
+        m_pos++;
+        String temp=gen.getWord(m_chapter,m_pos); // Try to get next word
+        if(temp==""){
+            m_chapter++;
+            if(m_chapter==getNumberOfChapters()){
+                stop(); // Stop playing and notify listeners
+                return "End of Book";
+            }
+            m_pos=0;
+            temp=gen.getWord(m_chapter,0);// Get first word of new chapter
+            for (OnChapterChangedListener l: chapterChangedListeners){
+                l.onChapterChanged(m_chapter,gen.getLengthOfChapter(m_chapter));
+            }
+        }
+        return temp;
+    }
     public void run() {
-        if (!gen.isM_init()) return;
+        for (RunningListener l: runningListeners){
+            l.running(true);
+        }
         m_playing = true;
         timer = new Thread(new Runnable() {
             @Override
             public void run() {
                 while (m_playing) {
-                    m_word = gen.next((int) Math.signum(m_wpm));
-                    sb.setProgress(gen.m_wordindex);
+                    m_word = next();
+                    //sb.setProgress(gen.m_wordindex);
                     post(new Runnable() {
                         @Override
                         public void run() {
@@ -133,7 +172,7 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
                     try {
                         double delaymult = 1;
                         if (m_word.contains("."))
-                            delaymult *= 2;
+                            delaymult *= 1.7;
                         if (m_word.contains(","))
                             delaymult *= 1.3;
                         if (m_word.length() > 6)
@@ -153,7 +192,8 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
 
     public void setPosition(int position) {
         if (gen.isM_init()) {
-                setText(gen.setM_wordindex(position));
+            m_pos=position;
+            setText(next());
         }
     }
 
@@ -168,6 +208,9 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
     }
 
     public void stop() {
+        for (RunningListener l: runningListeners) {
+            l.running(false);
+        }
         m_playing = false;
     }
 
@@ -182,13 +225,14 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
 
     public int getCurrentPosition() {
         if (gen.isM_init())
-            return gen.m_wordindex;
+            return m_pos;
         return 0;
     }
 
     public int getLengthOfChapter() {
         if (gen.isM_init())
-            return gen.getLengthOfChapter();
-        return 5;
+            return gen.getLengthOfChapter(m_chapter);
+        return 0;
     }
+
 }

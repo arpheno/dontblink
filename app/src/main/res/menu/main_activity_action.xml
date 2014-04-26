@@ -10,4 +10,7 @@
         android:icon="@drawable/choose_chapter"
 
         android:showAsAction="always" />
+    <item android:id="@+id/sample"
+        android:showAsAction="never"
+        android:title="Load Sample Book"/>
 </menu>

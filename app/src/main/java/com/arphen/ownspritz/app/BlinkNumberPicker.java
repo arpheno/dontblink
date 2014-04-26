@@ -5,7 +5,7 @@ import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.widget.NumberPicker;
 
-public class BlinkNumberPicker extends NumberPicker {
+public class BlinkNumberPicker extends NumberPicker implements RunningListener{
     public BlinkNumberPicker(Context context) {
         super(context);
         init(null, 0);
@@ -67,7 +67,14 @@ public class BlinkNumberPicker extends NumberPicker {
             }
         };
     }
+    @Override
+    public void running(Boolean running) {
+        if(running)
+            hide();
+        else
+            showperm();
 
+    }
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);

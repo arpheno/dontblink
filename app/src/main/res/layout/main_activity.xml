@@ -92,9 +92,9 @@
         android:textStyle="bold"
         android:textIsSelectable="false" />
 
-    <TextView
+    <com.arphen.ownspritz.app.BlinkAnnouncement
         android:layout_width="match_parent"
-        android:layout_height="25dp"
+        android:layout_height="45dp"
         android:id="@+id/authortitle"
         android:textColor="#FFFFFF"
         android:textSize="20dp"

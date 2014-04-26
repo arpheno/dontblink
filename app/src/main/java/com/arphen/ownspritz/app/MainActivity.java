@@ -24,6 +24,7 @@ import java.io.InputStream;
 
 import static com.arphen.ownspritz.app.R.id.action_choose_chapter;
 import static com.arphen.ownspritz.app.R.id.action_choose_file;
+import static com.arphen.ownspritz.app.R.id.sample;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -31,7 +32,7 @@ import static com.arphen.ownspritz.app.R.id.action_choose_file;
  *
  * @see SystemUiHider
  */
-public class MainActivity extends Activity{
+public class MainActivity extends Activity implements RunningListener {
 
     final int ACTIVITY_CHOOSE_FILE = 1;
     final int ACTIVITY_CHOOSE_CHAPTER = 888;
@@ -47,6 +48,7 @@ public class MainActivity extends Activity{
     private BlinkNumberPicker np;
     private TextView pt;
     private TextView pb;
+    private BlinkAnnouncement at;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,9 +83,12 @@ public class MainActivity extends Activity{
                 }
             }
         });
-        tv.setProgressBar(sb);
-        tv.registerChapterChangedListener(sb);
-        tv.registerChapterChangedListener(an);
+        at= (BlinkAnnouncement) findViewById(R.id.authortitle);
+        tv.addChapterChangedListener(sb);
+        tv.addChapterChangedListener(an);
+        tv.addRunningListener(this);
+        tv.addRunningListener(sb);
+        tv.addRunningListener(np);
         sb.setOnSeekBarChangeListener(
                 new SeekBar.OnSeekBarChangeListener() {
                     @Override
@@ -94,7 +99,6 @@ public class MainActivity extends Activity{
                         pt.setText(tv.getPreview(0));
                         pb.setText(tv.getPreview(1));
                         tv.stop();
-                        sb.show();
                     }
 
                     @Override
@@ -130,6 +134,16 @@ public class MainActivity extends Activity{
                 if (chapters != 0)
                     startActivityForResult(chooseChapter, ACTIVITY_CHOOSE_CHAPTER);
                 return true;
+            case sample:
+                try {
+                    InputStream k = getAssets().open("The Idiot.epub");
+                    announce("Loading File");
+                    tv.init(k);
+                    stopTV();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -158,7 +172,7 @@ public class MainActivity extends Activity{
                     try {
                         InputStream in = new FileInputStream(filePath);
                         tv.init(in);
-                        stopTV();
+                       // stopTV();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -167,7 +181,7 @@ public class MainActivity extends Activity{
             case ACTIVITY_CHOOSE_CHAPTER: {
                 if (resultCode == RESULT_OK) {
                     int c = data.getIntExtra("result", 0);
-                    chapterFromBeginning(c);
+                    tv.setChapter(c);
                     announce("Chapter: " + String.valueOf(c));
                     stopTV();
                 }
@@ -175,28 +189,22 @@ public class MainActivity extends Activity{
             }
         }
     }
-public void chapterFromBeginning(int c){
-    tv.setChapter(c);
-    tv.setPosition(0);
-    sb.setProgress(0);
-    sb.show();
-}
+    public void running(Boolean running) {
+        if(running)
+            getActionBar().hide();
+        else
+            getActionBar().show();
+
+    }
     public void runTV() {
-        sb.hide();
-        np.hide();
-        getActionBar().hide();
-        pt.setText("");
-        pb.setText("");
+    //    pt.setText("");
+      //  pb.setText("");
         tv.run();
     }
 
     public void stopTV() {
+//        pt.setText(tv.getPreview(0));
+  //      pb.setText(tv.getPreview(1));
         tv.stop();
-        sb.setMax(tv.getLengthOfChapter());
-        getActionBar().show();
-        sb.showperm();
-        np.showperm();
-        pt.setText(tv.getPreview(0));
-        pb.setText(tv.getPreview(1));
     }
 }
