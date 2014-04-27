@@ -56,8 +56,11 @@ public class MainActivity extends Activity implements RunningListener {
         setContentView(R.layout.main_activity);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        View decorView = getWindow().getDecorView();
+// Hide the status bar.
+        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN+View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
         getActionBar().setBackgroundDrawable(null);
-        tv = (BlinkView) findViewById(R.id.spritzview);
+        tv = (BlinkView) findViewById(R.id.blinkview);
         sb = (BlinkProgressBar) findViewById(R.id.seekBar);
         an = (BlinkAnnouncement) findViewById(R.id.announcement);
         np= (BlinkNumberPicker) findViewById(R.id.numberPicker);
@@ -210,7 +213,7 @@ public class MainActivity extends Activity implements RunningListener {
     }
 
     public void stopTV() {
-        pt.setText(tv.getPreview(-15,15));
+        pt.setText(tv.getPreview(-15, 15));
         pb.setText(tv.getPreview(1,20));
         tv.stop();
     }

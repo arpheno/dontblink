@@ -1,43 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merge xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout
+        android:layout_width="wrap_content" android:layout_height="100dp">
+        <TextView
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="k"
+            android:textSize="50dp"
+            android:textColor="#FF0000"
+            android:gravity="center"
+            android:id="@+id/textView2"
+            android:typeface="monospace"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:autoText="false" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:id="@+id/line2"
+            android:background="#666666"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/textView2"/>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:id="@+id/line3"
+            android:background="#666666"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:layout_above="@id/textView2"/>
 
-    <TextView
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="k"
-        android:textSize="25pt"
-        android:textColor="#FF0000"
-        android:gravity="center"
-        android:id="@+id/textView2"
-        android:typeface="monospace"
-        android:layout_centerHorizontal="true"
-        android:layout_gravity="center"
-        android:layout_width="wrap_content"
-        android:autoText="false" />
-
-    <TextView
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Clic"
-        android:textSize="25pt"
-
-        android:typeface="monospace"
-        android:id="@+id/textView"
-        android:layout_gravity="center_vertical"
-        android:layout_toLeftOf="@id/textView2"
-        android:layout_width="wrap_content" />
+        <View
+            android:layout_width="1dp"
+            android:layout_height="15dp"
+            android:id="@+id/line4"
+            android:background="#666666"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:layout_above="@id/textView2"/>
+        <View
+            android:layout_width="1dp"
+            android:layout_height="15dp"
+            android:background="#666666"
+            android:id="@+id/line1"
+            android:layout_gravity="center"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/textView2"/>
 
 
-    <TextView
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textSize="25pt"
-        android:typeface="monospace"
-        android:text=" to Start"
-        android:id="@+id/textView3"
-        android:layout_width="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:gravity="left"
-
-        android:layout_toRightOf="@id/textView2"/>
+        <TextView
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Clic"
+            android:textSize="50dp"
+            android:gravity="left|center_vertical"
+            android:typeface="monospace"
+            android:id="@+id/textView"
+            android:layout_gravity="center_vertical"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@id/textView2"
+            android:layout_width="wrap_content" />
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="350dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="50dp"
+            android:typeface="monospace"
+            android:text="to Sta"
+            android:id="@+id/textView3"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center_vertical"
+            android:gravity="left|center_vertical"
+            android:layout_toRightOf="@id/textView2"/>
+    </RelativeLayout>
 </merge>
