@@ -137,8 +137,6 @@ public void init(InputStream epubInputStream) throws IOException {
         protected void onProgressUpdate(Integer... progress) {
 
         }
-
-
         @Override
         protected Long doInBackground(Integer... integers) {
                 try {

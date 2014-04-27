@@ -32,7 +32,7 @@ import static com.arphen.ownspritz.app.R.id.sample;
  *
  * @see SystemUiHider
  */
-public class MainActivity extends Activity implements RunningListener {
+public class MainActivity extends Activity implements RunningListener, OnChapterChangedListener {
 
     final int ACTIVITY_CHOOSE_FILE = 1;
     final int ACTIVITY_CHOOSE_CHAPTER = 888;
@@ -49,6 +49,7 @@ public class MainActivity extends Activity implements RunningListener {
     private TextView pt;
     private TextView pb;
     private BlinkAnnouncement at;
+    private MenuItem chapterfield;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +61,7 @@ public class MainActivity extends Activity implements RunningListener {
 // Hide the status bar.
         decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN+View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
         getActionBar().setBackgroundDrawable(null);
+        getActionBar().setIcon(R.drawable.app_icon);
         tv = (BlinkView) findViewById(R.id.blinkview);
         sb = (BlinkProgressBar) findViewById(R.id.seekBar);
         an = (BlinkAnnouncement) findViewById(R.id.announcement);
@@ -90,8 +92,10 @@ public class MainActivity extends Activity implements RunningListener {
         tv.addChapterChangedListener(sb);
         tv.addChapterChangedListener(an);
         tv.addRunningListener(sb);
+        tv.addChapterChangedListener(this);
         tv.addRunningListener(this);
         tv.addRunningListener(np);
+        sb.linkBlinkView(tv);
         sb.setOnSeekBarChangeListener(
                 new SeekBar.OnSeekBarChangeListener() {
                     @Override
@@ -161,6 +165,7 @@ public class MainActivity extends Activity implements RunningListener {
         // Inflate the menu items for use in the action bar
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_activity_action, menu);
+        chapterfield= menu.findItem(R.id.Chapter);
         return super.onCreateOptionsMenu(menu);
     }
     @Override
@@ -216,5 +221,16 @@ public class MainActivity extends Activity implements RunningListener {
         pt.setText(tv.getPreview(-15, 15));
         pb.setText(tv.getPreview(1,20));
         tv.stop();
+    }
+
+    @Override
+    public void onChapterChanged(final int c, int l) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                chapterfield.setTitle("Chapter "+String.valueOf(c));
+            }
+        });
+
     }
 }

@@ -1,5 +1,6 @@
 package com.arphen.ownspritz.app;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
@@ -89,6 +90,11 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
     public void init(InputStream in) throws IOException {
         Log.i("Blinker", "Initializing Blinker");
         gen.init(in);
+        Activity host= (Activity)getContext();
+        if (host != null) {
+            host.getActionBar().setTitle(gen.getTitle());
+            host.getActionBar().setSubtitle(gen.getAuthor());
+        }
     }
 
     /**
@@ -225,11 +231,6 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
             return 0;
         return gen.getBooklength();
     }
-
-    public int getWpm() {
-        return (int) m_wpm;
-    }
-
     public void stop() {
         for (RunningListener l: runningListeners) {
             l.running(false);
