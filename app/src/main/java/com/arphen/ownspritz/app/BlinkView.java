@@ -175,7 +175,6 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
             Log.i("BlinkView","Notifying chapterchangedlisteners");
             temp=gen.getWord(m_chapter,0);// Get first word of new chapter
             for (OnChapterChangedListener l: chapterChangedListeners){
-
                 l.onChapterChanged(m_chapter,gen.getLengthOfChapter(m_chapter));
             }
         }

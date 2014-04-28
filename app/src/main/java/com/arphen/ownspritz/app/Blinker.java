@@ -1,6 +1,5 @@
 package com.arphen.ownspritz.app;
 
-import android.os.AsyncTask;
 import android.text.Html;
 import android.util.Log;
 
@@ -40,6 +39,9 @@ public void init(InputStream epubInputStream) throws IOException {
     for(int i=0;i<m_book.getSpine().getSpineReferences().size();i++)
         m_chapters.add(null);
     m_init=true;
+    lazy_load_chapter(0,0);
+    for(int i=1;i<m_book.getSpine().getSpineReferences().size();i++)
+        lazy_load_chapter(i, 3000);
 
 }
     public static List<String> splitEqually(String text, int size) {
@@ -67,9 +69,14 @@ public void init(InputStream epubInputStream) throws IOException {
                 return m_chapters.get(p_chapter)[p_word];
             } catch (NullPointerException e) {
                 Log.e("Blinker", "Need to fetch chapter" + String.valueOf(p_chapter));
-                new LoadChapter().execute(p_chapter + 1);
-                new LoadChapter().execute(p_chapter-1);
-                loadChapter(p_chapter);
+                while(m_chapters.get(p_chapter)==null){
+                    try {
+                        Log.e("Blinker", "Sleeping while waiting");
+                        Thread.sleep(500);
+                    } catch (InterruptedException e1) {
+                        e1.printStackTrace();
+                    }
+                }
                 String k = m_chapters.get(p_chapter)[p_word];
                 return k;
             }
@@ -111,6 +118,10 @@ public void init(InputStream epubInputStream) throws IOException {
             Log.e("Blinker","Trying to load chapter without init");
             return ;
         }
+        if(m_chapters.get(c)!=null){
+            Log.e("Blinker","Chapter"+String.valueOf(c)+" already loaded.");
+            return ;
+        }
         Log.i("Blinker","Chapter "+String.valueOf(c)+" loading.");
         Resource resource = m_book.getSpine().getSpineReferences().get(c).getResource();
         String decoded = null;
@@ -127,38 +138,30 @@ public void init(InputStream epubInputStream) throws IOException {
         }
         decoded = Html.fromHtml(decoded).toString().replaceAll("(?s)<!--.*?-->", "");
         m_chapters.set(c,decoded.split("\\s"));
+        Log.i("Blinker","Chapter "+String.valueOf(c)+" loaded.");
     }
     public boolean isM_init(){return m_init;}
 
     /**
-     * Class to lazily load a chapter.
+     * function to lazily load a chapter.
      */
-    class LoadChapter extends AsyncTask<Integer, Integer, Long> {
-        protected void onProgressUpdate(Integer... progress) {
+    void lazy_load_chapter(final int c,final int delay) {
 
-        }
-        @Override
-        protected Long doInBackground(Integer... integers) {
+        Thread temp = new Thread(new Runnable() {
+            @Override
+            public void run() {
                 try {
-                    if(m_chapters.get(integers[0])==null){
-                        loadChapter(integers[0]);
+                    Thread.sleep(delay);
+                    if (m_chapters.get(c) == null) {
+                        loadChapter(c);
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.e("Blinker", e.toString());
                 }
-                catch(Exception e){
-                    Log.e("Blinker",e.toString());
-                    return Long.valueOf(integers[0]);
-                }
-            return -Long.valueOf(integers[0]);
-        }
-
-        protected void onPostExecute(Long result) {
-            if(result>=0)
-                Log.i("Async","Chapter "+String.valueOf(result)+" loaded.");
-            else
-                Log.i("blinker", "Chapter already loaded");
-        }
-
-
-
+            }
+        });
+        temp.start();
     }
+
 }

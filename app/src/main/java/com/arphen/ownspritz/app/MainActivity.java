@@ -103,9 +103,7 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
                         if (!arg2)
                             return;
                         tv.setPosition(arg1);
-                        pt.setText(tv.getPreview(-15,15));
-                        pb.setText(tv.getPreview(1,20));
-                        tv.stop();
+                        stopTV();
                     }
 
                     @Override
@@ -190,7 +188,7 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
                 if (resultCode == RESULT_OK) {
                     int c = data.getIntExtra("result", 0);
                     tv.setChapter(c);
-                    announce("Chapter: " + String.valueOf(c));
+                    announce("Chapter: " + String.valueOf(c+2));
                     stopTV();
                 }
 
@@ -211,6 +209,27 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
             //getActionBar().show();
         }
     }
+    private static final String TAG = "ACTIVITY";
+    @Override public void onStart() {
+        Log.d(TAG, "onStart:");
+        super.onStart();
+    }
+    @Override public void onResume() {
+        Log.d(TAG, "onResume:");
+        super.onResume();
+    }
+    @Override public void onPause() {
+        Log.d(TAG, "onPause:");
+        super.onPause();
+    }
+    @Override public void onStop() {
+        Log.d(TAG, "onStop:");
+        super.onStop();
+    }
+    @Override public void onDestroy() {
+        Log.d(TAG, "onDestroy:");
+        super.onDestroy();
+    }
     public void runTV() {
         pt.setText("");
         pb.setText("");
@@ -218,8 +237,21 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
     }
 
     public void stopTV() {
-        pt.setText(tv.getPreview(-15, 15));
-        pb.setText(tv.getPreview(1,20));
+        Thread timer = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final String top=tv.getPreview(-15,15);
+                final String bot=tv.getPreview(1,20);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        pt.setText(top);
+                        pb.setText(bot);
+                    }
+                });
+            }
+        });
+        timer.start();
         tv.stop();
     }
 
@@ -228,7 +260,7 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                chapterfield.setTitle("Chapter "+String.valueOf(c));
+                chapterfield.setTitle("Chapter "+String.valueOf(c+1));
             }
         });
 
