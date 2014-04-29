@@ -23,6 +23,7 @@
         android:columnWidth="150dp"
         android:layout_gravity="left|top"
         android:gravity="center"
-        android:smoothScrollbar="false" />
+        android:smoothScrollbar="false"
+        android:layout_marginTop="50dp" />
 
 </FrameLayout>
