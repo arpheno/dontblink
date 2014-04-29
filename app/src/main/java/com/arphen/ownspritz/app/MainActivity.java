@@ -203,22 +203,48 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
                                 }
                             }
                         }).start();
-                       // stopTV();
+                        // stopTV();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
 
-                break;}
+                break;
+            }
             case ACTIVITY_CHOOSE_CHAPTER: {
                 if (resultCode == RESULT_OK) {
                     int c = data.getIntExtra("result", 0);
                     tv.forceChapter(c);
-                    announce("Chapter: " + String.valueOf(c+2));
+                    announce("Chapter: " + String.valueOf(c + 2));
                     stopTV();
                 }
+                break;
             }
+            case ACTIVITY_BROWSE_LIBRARY: {
+                String filePath = data.getStringExtra("result");
+                announce("Loading File");
+                try {
+                    final InputStream in = new FileInputStream(filePath);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                tv.init(in);
+                                stopTV();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
+                    // stopTV();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            break;
         }
+
     }
     public void running(Boolean running) {
         if(running) {
