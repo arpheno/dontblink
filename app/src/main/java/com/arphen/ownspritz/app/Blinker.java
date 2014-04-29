@@ -39,10 +39,6 @@ public void init(InputStream epubInputStream) throws IOException {
     for(int i=0;i<m_book.getSpine().getSpineReferences().size();i++)
         m_chapters.add(null);
     m_init=true;
-    lazy_load_chapter(0,0);
-    for(int i=1;i<m_book.getSpine().getSpineReferences().size();i++)
-        lazy_load_chapter(i, 3000);
-
 }
     public static List<String> splitEqually(String text, int size) {
         // Give the list the right capacity to start with. You could use an array

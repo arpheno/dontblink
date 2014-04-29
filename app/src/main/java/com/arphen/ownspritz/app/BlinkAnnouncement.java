@@ -72,7 +72,7 @@ public class BlinkAnnouncement extends TextView implements OnChapterChangedListe
         post(new Runnable() {
             @Override
             public void run() {
-                setText("Chapter "+String.valueOf(c));
+                setText("Chapter "+String.valueOf(c+1));
             }
         });
 

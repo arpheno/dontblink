@@ -26,6 +26,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="FullscreenActivity" />
         </activity>
+        <activity
+            android:name=".LibraryBrowser"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="Library"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="FullscreenActivity" />
+        </activity>
     </application>
 
 </manifest>

@@ -20,7 +20,7 @@
         android:numColumns="auto_fit"
         android:textFilterEnabled="false"
         android:stretchMode="spacingWidthUniform"
-        android:columnWidth="50dp"
+        android:columnWidth="150dp"
         android:layout_gravity="left|top"
         android:gravity="center"
         android:smoothScrollbar="false" />

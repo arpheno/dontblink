@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -28,6 +30,9 @@ public class ChapterChooser extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.chapter_chooser);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        getActionBar().setBackgroundDrawable(null);
+        getActionBar().setIcon(R.drawable.app_icon);
+        getActionBar().setTitle("Choose a chapter");
         gridView = (GridView) findViewById(R.id.gridView);
         Intent i = getIntent();
         int chapters = i.getIntExtra("chapters", 0);
@@ -53,4 +58,11 @@ public class ChapterChooser extends Activity {
 
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu items for use in the action bar
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.library_action, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
 }

@@ -24,7 +24,8 @@ import java.io.InputStream;
 
 import static com.arphen.ownspritz.app.R.id.action_choose_chapter;
 import static com.arphen.ownspritz.app.R.id.action_choose_file;
-import static com.arphen.ownspritz.app.R.id.sample;
+import static com.arphen.ownspritz.app.R.id.action_choose_library;
+import static com.arphen.ownspritz.app.R.id.action_choose_sample;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -34,6 +35,7 @@ import static com.arphen.ownspritz.app.R.id.sample;
  */
 public class MainActivity extends Activity implements RunningListener, OnChapterChangedListener {
 
+    private static final int ACTIVITY_BROWSE_LIBRARY = 666;
     final int ACTIVITY_CHOOSE_FILE = 1;
     final int ACTIVITY_CHOOSE_CHAPTER = 888;
     public GestureDetector gestureScanner;
@@ -54,69 +56,9 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main_activity);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        View decorView = getWindow().getDecorView();
-// Hide the status bar.
-        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN+View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
-        getActionBar().setBackgroundDrawable(null);
-        getActionBar().setIcon(R.drawable.app_icon);
-        tv = (BlinkView) findViewById(R.id.blinkview);
-        sb = (BlinkProgressBar) findViewById(R.id.seekBar);
-        an = (BlinkAnnouncement) findViewById(R.id.announcement);
-        np= (BlinkNumberPicker) findViewById(R.id.numberPicker);
-        pt= (TextView)findViewById(R.id.previewTop);
-        pb= (TextView)findViewById(R.id.previewBot);
-        np.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
-            @Override
-            public void onValueChange(NumberPicker numberPicker, int i, int i2) {
-                tv.changeWpm((i2-250)*10);
-                np.show();
-                announce(String.valueOf((i2-250)*10)+" Words per minute now");
-            }
-        });
-        tv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!tv.is_init())
-                    return;
-                if (tv.is_playing()) {
-                    stopTV();
-                } else {
-                    runTV();
-                }
-            }
-        });
-        at= (BlinkAnnouncement) findViewById(R.id.authortitle);
-        tv.addChapterChangedListener(sb);
-        tv.addChapterChangedListener(an);
-        tv.addRunningListener(sb);
-        tv.addChapterChangedListener(this);
-        tv.addRunningListener(this);
-        tv.addRunningListener(np);
-        sb.linkBlinkView(tv);
-        sb.setOnSeekBarChangeListener(
-                new SeekBar.OnSeekBarChangeListener() {
-                    @Override
-                    public void onProgressChanged(SeekBar arg0, int arg1, boolean arg2) {
-                        if (!arg2)
-                            return;
-                        tv.setPosition(arg1);
-                        stopTV();
-                    }
-
-                    @Override
-                    public void onStartTrackingTouch(SeekBar seekBar) {
-                        sb.show();
-                        }
-
-                    @Override
-                    public void onStopTrackingTouch(SeekBar seekBar) {
-                        sb.show();
-                    }
-                }
-        );
+        setUpUi();
+        populateViews();
+        linkViews();
     }
 
     @Override
@@ -139,16 +81,21 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
                 if (chapters != 0)
                     startActivityForResult(chooseChapter, ACTIVITY_CHOOSE_CHAPTER);
                 return true;
-            case sample:
+            case action_choose_sample:
                 try {
                     InputStream k = getAssets().open("The Idiot.epub");
                     announce("Loading File");
                     tv.init(k);
-                    stopTV();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
+                return true;
+            case action_choose_library:
+                Intent browseLibrary;
+                browseLibrary = new Intent(getApplicationContext(), LibraryBrowser .class);
+                //chooseChapter.putExtra("chapters", chapters);
+                startActivityForResult(browseLibrary,ACTIVITY_BROWSE_LIBRARY );
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -157,6 +104,74 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
     public void announce(String what) {
         an.setText(what);
         an.show();
+    }
+    private void linkViews(){
+
+        np.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange(NumberPicker numberPicker, int i, int i2) {
+                tv.changeWpm((i2 - 250) * 10);
+                np.show();
+            }
+        });
+        tv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!tv.is_init())
+                    return;
+                if (tv.is_playing()) {
+                    stopTV();
+                } else {
+                    runTV();
+                }
+            }
+        });
+        /* Link Components */
+        tv.addChapterChangedListener(sb);
+        tv.addChapterChangedListener(an);
+        tv.addChapterChangedListener(this);
+        tv.addRunningListener(sb);
+        tv.addRunningListener(np);
+        tv.addRunningListener(this);
+        sb.linkBlinkView(tv);
+        sb.setOnSeekBarChangeListener(
+                new SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged(SeekBar arg0, int arg1, boolean arg2) {
+                        if (!arg2)
+                            return;
+                        tv.setPosition(arg1);
+                        stopTV();
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+                        sb.show();
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+                        sb.show();
+                    }
+                }
+        );
+    }
+    private void setUpUi(){
+        setContentView(R.layout.main_activity);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN+View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+        getActionBar().setBackgroundDrawable(null);
+        getActionBar().setIcon(R.drawable.app_icon);
+    }
+    private void populateViews(){
+        tv = (BlinkView) findViewById(R.id.blinkview);
+        sb = (BlinkProgressBar) findViewById(R.id.seekBar);
+        an = (BlinkAnnouncement) findViewById(R.id.announcement);
+        np= (BlinkNumberPicker) findViewById(R.id.numberPicker);
+        pt= (TextView)findViewById(R.id.previewTop);
+        pb= (TextView)findViewById(R.id.previewBot);
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -176,22 +191,32 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
                     Log.i("Filechooser", filePath);
                     announce("Loading File");
                     try {
-                        InputStream in = new FileInputStream(filePath);
-                        tv.init(in);
+                        final InputStream in = new FileInputStream(filePath);
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    tv.init(in);
+                                    stopTV();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }).start();
                        // stopTV();
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
-            }
+
+                break;}
             case ACTIVITY_CHOOSE_CHAPTER: {
                 if (resultCode == RESULT_OK) {
                     int c = data.getIntExtra("result", 0);
-                    tv.setChapter(c);
+                    tv.forceChapter(c);
                     announce("Chapter: " + String.valueOf(c+2));
                     stopTV();
                 }
-
             }
         }
     }
@@ -204,33 +229,10 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
             //getActionBar().hide();
         }else {
             View decorView = getWindow().getDecorView();
-// Hide the status bar.
             decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN+View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
-            //getActionBar().show();
         }
     }
-    private static final String TAG = "ACTIVITY";
-    @Override public void onStart() {
-        Log.d(TAG, "onStart:");
-        super.onStart();
-    }
-    @Override public void onResume() {
-        Log.d(TAG, "onResume:");
-        super.onResume();
-    }
-    @Override public void onPause() {
-        Log.d(TAG, "onPause:");
-        super.onPause();
-    }
-    @Override public void onStop() {
-        Log.d(TAG, "onStop:");
-        super.onStop();
-    }
-    @Override public void onDestroy() {
-        Log.d(TAG, "onDestroy:");
-        super.onDestroy();
-    }
-    public void runTV() {
+     public void runTV() {
         pt.setText("");
         pb.setText("");
         tv.run();
@@ -257,12 +259,33 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
 
     @Override
     public void onChapterChanged(final int c, int l) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 chapterfield.setTitle("Chapter "+String.valueOf(c+1));
+                View decorView = getWindow().getDecorView();
+                decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN+View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+            }
+        });
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                View decorView = getWindow().getDecorView();
+                int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN+View.SYSTEM_UI_FLAG_LAYOUT_STABLE+View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+                decorView.setSystemUiVisibility(uiOptions);
             }
         });
 
+            }
+        }).start();
     }
 }
