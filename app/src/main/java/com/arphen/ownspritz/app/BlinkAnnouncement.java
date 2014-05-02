@@ -9,8 +9,11 @@ import android.widget.TextView;
 /**
  * TODO: document your custom view class.
  */
-public class BlinkAnnouncement extends TextView implements OnChapterChangedListener{
+public class BlinkAnnouncement extends TextView implements OnChapterChangedListener {
 
+    private Runnable hide;
+    private Runnable show;
+    private boolean onTop = false;
     public BlinkAnnouncement(Context context) {
         super(context);
         init(null, 0);
@@ -23,9 +26,6 @@ public class BlinkAnnouncement extends TextView implements OnChapterChangedListe
         super(context, attrs, defStyle);
         init(attrs, defStyle);
     }
-    private Runnable hide;
-    private Runnable show;
-    private boolean onTop = false;
 
     public void hide() {
         removeCallbacks(hide);

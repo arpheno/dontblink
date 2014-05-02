@@ -15,8 +15,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 public class BlinkView extends RelativeLayout implements View.OnClickListener {
-    private Runnable setAuthorAndTitle;
     public Blinker gen;
+    public Runnable cc;
+    private Runnable setAuthorAndTitle;
     private TextView left;
     private TextView middle;
     private TextView right;
@@ -30,7 +31,6 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
     private int m_chapter=0; // Needs to be initialized to -1 so we get a chapter changed event.
     private ArrayList<OnChapterChangedListener> chapterChangedListeners;
     private long lastChapterChanged;
-    private Runnable cc;
 
     public BlinkView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -78,12 +78,15 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
     public void changeWpm(double wpm) {
         m_wpm = wpm;
     }
-
     public void init(InputStream in) throws IOException {
+        init(in, 0);
+    }
+
+    public void init(InputStream in, int c) throws IOException {
         Log.i("Blinker", "Initializing Blinker");
         gen.init(in);
         post(setAuthorAndTitle);
-        forceChapter(0);
+        forceChapter(c);
     }
     public void initRunnables() {
         setAuthorAndTitle = new Runnable() {
@@ -213,18 +216,23 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
         }
     }
     public void forceChapter(final int c){
+        forceChapter(c, 0);
+    }
+
+    public void forceChapter(final int c, final int p) {
         if(cc!=null)
             return;
+        Log.i("TV", "Switching to chapter " + String.valueOf(c));
         gen.lazy_load_chapter(c,0);
         m_chapter=c;
-        m_pos=0;
+        m_pos = p;
         cc=new Runnable() {
             @Override
             public void run() {
                 if (!gen.isM_init()) return;
-                final String text = gen.getWord(m_chapter, 0);
+                final String text = gen.getWord(m_chapter, p);
                 setText(text);
-                Log.i("BlinkView","Notifying chapterchangedlisteners");
+                Log.i("BlinkView", "Notifying chapterchangedlisteners");
                 for (OnChapterChangedListener l: chapterChangedListeners){
                     l.onChapterChanged(m_chapter,gen.getLengthOfChapter(m_chapter));
                 }
@@ -232,6 +240,10 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
             }
         };
         postDelayed(cc,300);
+    }
+
+    public int getM_chapter() {
+        return m_chapter;
     }
     public int getNumberOfChapters() {
         if (!gen.isM_init())

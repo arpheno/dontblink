@@ -5,7 +5,11 @@ import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.widget.NumberPicker;
 
-public class BlinkNumberPicker extends NumberPicker implements RunningListener{
+public class BlinkNumberPicker extends NumberPicker implements RunningListener {
+    private Runnable hide;
+    private Runnable show;
+    private boolean onTop = false;
+
     public BlinkNumberPicker(Context context) {
         super(context);
         init(null, 0);
@@ -20,10 +24,6 @@ public class BlinkNumberPicker extends NumberPicker implements RunningListener{
         super(context, attrs, defStyle);
         init(attrs, defStyle);
     }
-
-    private Runnable hide;
-    private Runnable show;
-    private boolean onTop = false;
 
     public void hide() {
         removeCallbacks(hide);
@@ -49,8 +49,8 @@ public class BlinkNumberPicker extends NumberPicker implements RunningListener{
         setMaxValue(500);
         setMinValue(0);
         String[] nums = new String[501];
-        for(int q=500;q>=0;q--){
-            nums[q]=String.valueOf((q-250)*10);
+        for (int q = 500; q >= 0; q--) {
+            nums[q] = String.valueOf((q - 250) * 10);
         }
         setDisplayedValues(nums);
         setValue(300);
@@ -67,14 +67,16 @@ public class BlinkNumberPicker extends NumberPicker implements RunningListener{
             }
         };
     }
+
     @Override
     public void running(Boolean running) {
-        if(running)
+        if (running)
             hide();
         else
             showperm();
 
     }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);

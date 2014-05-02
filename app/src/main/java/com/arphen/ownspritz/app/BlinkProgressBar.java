@@ -14,7 +14,7 @@ import java.util.TimerTask;
 /**
  * TODO: document your custom view class.
  */
-public class BlinkProgressBar extends SeekBar implements OnChapterChangedListener ,RunningListener{
+public class BlinkProgressBar extends SeekBar implements OnChapterChangedListener, RunningListener {
 
     private Runnable hide;
     private Runnable show;
@@ -27,16 +27,18 @@ private BlinkView bv;
         super(context);
         init(null, 0);
     }
-    public void linkBlinkView(BlinkView display){
-        bv=display;
-    }
     public BlinkProgressBar(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(attrs, 0);
     }
+
     public BlinkProgressBar(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init(attrs, defStyle);
+    }
+
+    public void linkBlinkView(BlinkView display) {
+        bv = display;
     }
 
     protected void onDraw(Canvas canvas) {

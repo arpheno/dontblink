@@ -1,7 +1,9 @@
 package com.arphen.ownspritz.app;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
@@ -52,53 +54,59 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
     private TextView pb;
     private BlinkAnnouncement at;
     private MenuItem chapterfield;
+    private SharedPreferences mPrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mPrefs = this.getSharedPreferences(
+                "com.arphen.dontblink", Context.MODE_PRIVATE);
         setUpUi();
         populateViews();
         linkViews();
+        initFromPrefs();
+    }
+
+    private void initFromPrefs() {
+        String current_file_path = mPrefs.getString("current_file_path", "");
+        if (current_file_path != "")
+            loadFile(current_file_path);
+        final int c = mPrefs.getInt("current_chapter", -1);
+        if (c != -1) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while (!tv.is_init()) {
+                        try {
+                            Log.i("Main", "Initializing from before Chapter " + String.valueOf(c) + ", waiting for tv to come up");
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    Log.i("Main", "Initializing to Chapter " + String.valueOf(c));
+                    tv.cc = null;
+                    tv.forceChapter(c, mPrefs.getInt("current_position", 0));
+                }
+            }).start();
+
+        }
+
+    }
+
+    protected void onPause() {
+        super.onPause();
+        SharedPreferences.Editor ed = mPrefs.edit();
+        ed.putInt("current_position", tv.getCurrentPosition());
+        ed.putInt("current_chapter", tv.getM_chapter());
+        Log.i("Main", "Saving chapter to " + String.valueOf(tv.getM_chapter() + " position " + String.valueOf(tv.getCurrentPosition())));
+        ed.commit();
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle presses on the action bar items
-        switch (item.getItemId()) {
-            case action_choose_file:
-                Intent chooseFile;
-                Intent intent;
-                chooseFile = new Intent(Intent.ACTION_GET_CONTENT);
-                chooseFile.setType("file/*");
-                intent = Intent.createChooser(chooseFile, "Choose a file");
-                startActivityForResult(intent, ACTIVITY_CHOOSE_FILE);
-                return true;
-            case action_choose_chapter:
-                Intent chooseChapter;
-                chooseChapter = new Intent(getApplicationContext(), ChapterChooser.class);
-                int chapters = tv.getNumberOfChapters();
-                chooseChapter.putExtra("chapters", chapters);
-                if (chapters != 0)
-                    startActivityForResult(chooseChapter, ACTIVITY_CHOOSE_CHAPTER);
-                return true;
-            case action_choose_sample:
-                try {
-                    InputStream k = getAssets().open("The Idiot.epub");
-                    announce("Loading File");
-                    tv.init(k);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return true;
-            case action_choose_library:
-                Intent browseLibrary;
-                browseLibrary = new Intent(getApplicationContext(), LibraryBrowser .class);
-                //chooseChapter.putExtra("chapters", chapters);
-                startActivityForResult(browseLibrary,ACTIVITY_BROWSE_LIBRARY );
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
+    protected void onResume() {
+        super.onResume();
+
     }
 
     public void announce(String what) {
@@ -173,91 +181,7 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
         pt= (TextView)findViewById(R.id.previewTop);
         pb= (TextView)findViewById(R.id.previewBot);
     }
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu items for use in the action bar
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main_activity_action, menu);
-        chapterfield= menu.findItem(R.id.Chapter);
-        return super.onCreateOptionsMenu(menu);
-    }
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case ACTIVITY_CHOOSE_FILE: {
-                if (resultCode == RESULT_OK) {
-                    Uri uri = data.getData();
-                    String filePath = uri.getPath();
-                    Log.i("Filechooser", filePath);
-                    announce("Loading File");
-                    try {
-                        final InputStream in = new FileInputStream(filePath);
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    tv.init(in);
-                                    stopTV();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }).start();
-                        // stopTV();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
 
-                break;
-            }
-            case ACTIVITY_CHOOSE_CHAPTER: {
-                if (resultCode == RESULT_OK) {
-                    int c = data.getIntExtra("result", 0);
-                    tv.forceChapter(c);
-                    announce("Chapter: " + String.valueOf(c + 2));
-                    stopTV();
-                }
-                break;
-            }
-            case ACTIVITY_BROWSE_LIBRARY: {
-                String filePath = data.getStringExtra("result");
-                announce("Loading File");
-                try {
-                    final InputStream in = new FileInputStream(filePath);
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                tv.init(in);
-                                stopTV();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }).start();
-                    // stopTV();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            break;
-        }
-
-    }
-    public void running(Boolean running) {
-        if(running) {
-            View decorView = getWindow().getDecorView();
-// Hide the status bar.
-            int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN+View.SYSTEM_UI_FLAG_LAYOUT_STABLE+View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-            decorView.setSystemUiVisibility(uiOptions);
-            //getActionBar().hide();
-        }else {
-            View decorView = getWindow().getDecorView();
-            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN+View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
-        }
-    }
      public void runTV() {
         pt.setText("");
         pb.setText("");
@@ -283,7 +207,43 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
         tv.stop();
     }
 
+    private void loadFile(String filePath) {
+        Log.i("Main", "Loading " + filePath);
+        announce("Loading File");
+        try {
+            final InputStream in = new FileInputStream(filePath);
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        tv.init(in);
+                        stopTV();
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+            SharedPreferences.Editor ed = mPrefs.edit();
+            ed.putString("current_file_path", filePath);
+            ed.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     @Override
+    public void running(Boolean running) {
+        if (running) {
+            View decorView = getWindow().getDecorView();
+// Hide the status bar.
+            int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN + View.SYSTEM_UI_FLAG_LAYOUT_STABLE + View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+            decorView.setSystemUiVisibility(uiOptions);
+            //getActionBar().hide();
+        } else {
+            View decorView = getWindow().getDecorView();
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN + View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+        }
+    }
     public void onChapterChanged(final int c, int l) {
         new Thread(new Runnable() {
             @Override
@@ -314,4 +274,82 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
             }
         }).start();
     }
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case ACTIVITY_CHOOSE_FILE: {
+                if (resultCode == RESULT_OK) {
+                    Uri uri = data.getData();
+                    String filePath = uri.getPath();
+                    loadFile(filePath);
+                }
+                break;
+            }
+            case ACTIVITY_CHOOSE_CHAPTER: {
+                if (resultCode == RESULT_OK) {
+                    int c = data.getIntExtra("result", 0);
+                    tv.forceChapter(c);
+                    announce("Chapter: " + String.valueOf(c + 2));
+                    stopTV();
+                }
+                break;
+            }
+            case ACTIVITY_BROWSE_LIBRARY: {
+                String filePath = data.getStringExtra("result");
+                loadFile(filePath);
+                break;
+            }
+        }
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu items for use in the action bar
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_activity_action, menu);
+        chapterfield = menu.findItem(R.id.Chapter);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle presses on the action bar items
+        switch (item.getItemId()) {
+            case action_choose_file:
+                Intent chooseFile;
+                Intent intent;
+                chooseFile = new Intent(Intent.ACTION_GET_CONTENT);
+                chooseFile.setType("file/*");
+                intent = Intent.createChooser(chooseFile, "Choose a file");
+                startActivityForResult(intent, ACTIVITY_CHOOSE_FILE);
+                return true;
+            case action_choose_chapter:
+                Intent chooseChapter;
+                chooseChapter = new Intent(getApplicationContext(), ChapterChooser.class);
+                int chapters = tv.getNumberOfChapters();
+                chooseChapter.putExtra("chapters", chapters);
+                if (chapters != 0)
+                    startActivityForResult(chooseChapter, ACTIVITY_CHOOSE_CHAPTER);
+                return true;
+            case action_choose_sample:
+                try {
+                    InputStream k = getAssets().open("The Idiot.epub");
+                    announce("Loading File");
+                    tv.init(k);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return true;
+            case action_choose_library:
+                Intent browseLibrary;
+                browseLibrary = new Intent(getApplicationContext(), LibraryBrowser.class);
+                //chooseChapter.putExtra("chapters", chapters);
+                startActivityForResult(browseLibrary, ACTIVITY_BROWSE_LIBRARY);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
 }
