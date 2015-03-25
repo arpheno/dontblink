@@ -295,9 +295,11 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
                 break;
             }
             case ACTIVITY_BROWSE_LIBRARY: {
-                String filePath = data.getStringExtra("result");
-                loadFile(filePath);
-                break;
+                if (resultCode == RESULT_OK) {
+                    String filePath = data.getStringExtra("result");
+                    loadFile(filePath);
+                    break;
+                }
             }
         }
 
