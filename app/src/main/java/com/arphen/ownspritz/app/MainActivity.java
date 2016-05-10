@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.arphen.ownspritz.app.util.SystemUiHider;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -68,9 +69,9 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
     }
 
     private void initFromPrefs() {
-        String current_file_path = mPrefs.getString("current_file_path", "");
-        if (current_file_path != "")
-            loadFile(current_file_path);
+       // String current_file_path = mPrefs.getString("current_file_path", "");
+       // if (current_file_path != "")
+       //     loadFile(current_file_path);
         final int c = mPrefs.getInt("current_chapter", -1);
         if (c != -1) {
             new Thread(new Runnable() {
@@ -207,11 +208,10 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
         tv.stop();
     }
 
-    private void loadFile(String filePath) {
-        Log.i("Main", "Loading " + filePath);
+    private void loadFile( final InputStream in) {
+        Log.i("Main", "Loading ");
         announce("Loading File");
         try {
-            final InputStream in = new FileInputStream(filePath);
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -225,8 +225,8 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
                 }
             }).start();
             SharedPreferences.Editor ed = mPrefs.edit();
-            ed.putString("current_file_path", filePath);
-            ed.commit();
+            //ed.putString("current_file_path", filePath);
+            //ed.commit();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -276,12 +276,18 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
         switch (requestCode) {
             case ACTIVITY_CHOOSE_FILE: {
                 if (resultCode == RESULT_OK) {
                     Uri uri = data.getData();
-                    String filePath = uri.getPath();
-                    loadFile(filePath);
+                    try {
+                        final InputStream inputStream = getContentResolver().openInputStream(uri);
+                        loadFile(inputStream);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+
                 }
                 break;
             }
@@ -297,7 +303,7 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
             case ACTIVITY_BROWSE_LIBRARY: {
                 if (resultCode == RESULT_OK) {
                     String filePath = data.getStringExtra("result");
-                    loadFile(filePath);
+                    //loadFile(filePath);
                     break;
                 }
             }
@@ -321,8 +327,8 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
             case action_choose_file:
                 Intent chooseFile;
                 Intent intent;
-                chooseFile = new Intent(Intent.ACTION_GET_CONTENT);
-                chooseFile.setType("file/*");
+                chooseFile = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                chooseFile.setType("application/epub+zip");
                 intent = Intent.createChooser(chooseFile, "Choose a file");
                 startActivityForResult(intent, ACTIVITY_CHOOSE_FILE);
                 return true;
@@ -336,7 +342,7 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
                 return true;
             case action_choose_sample:
                 try {
-                    InputStream k = getAssets().open("The Idiot.epub");
+                    InputStream k = getAssets().open("habits.epub");
                     announce("Loading File");
                     tv.init(k);
                 } catch (IOException e) {
@@ -344,10 +350,10 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
                 }
                 return true;
             case action_choose_library:
-                Intent browseLibrary;
-                browseLibrary = new Intent(getApplicationContext(), LibraryBrowser.class);
+                //Intent browseLibrary;
+                //browseLibrary = new Intent(getApplicationContext(), LibraryBrowser.class);
                 //chooseChapter.putExtra("chapters", chapters);
-                startActivityForResult(browseLibrary, ACTIVITY_BROWSE_LIBRARY);
+                //startActivityForResult(browseLibrary, ACTIVITY_BROWSE_LIBRARY);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
