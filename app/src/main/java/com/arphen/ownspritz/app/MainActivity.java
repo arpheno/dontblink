@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Menu;
@@ -20,15 +21,22 @@ import android.widget.TextView;
 
 import com.arphen.ownspritz.app.util.SystemUiHider;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+
+import nl.siegmann.epublib.domain.Book;
+import nl.siegmann.epublib.domain.Resource;
+import nl.siegmann.epublib.epub.EpubReader;
 
 import static com.arphen.ownspritz.app.R.id.action_choose_chapter;
 import static com.arphen.ownspritz.app.R.id.action_choose_file;
 import static com.arphen.ownspritz.app.R.id.action_choose_library;
 import static com.arphen.ownspritz.app.R.id.action_choose_sample;
+import static java.lang.Math.round;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -72,22 +80,29 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
        // String current_file_path = mPrefs.getString("current_file_path", "");
        // if (current_file_path != "")
        //     loadFile(current_file_path);
+
         final int c = mPrefs.getInt("current_chapter", -1);
+        final int p = mPrefs.getInt("current_position", 0);
         if (c != -1) {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    while (!tv.is_init()) {
-                        try {
-                            Log.i("Main", "Initializing from before Chapter " + String.valueOf(c) + ", waiting for tv to come up");
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                    InputStream local = null;
+                    try {
+                        local = openFileInput("currentfile");
+                        EpubExtractor epubExtractor = new EpubExtractor(local).invoke();
+                        tv.init(epubExtractor.getChapters(),epubExtractor.getAuthor(),epubExtractor.getTitle());
+                        stopTV();
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
+
                     Log.i("Main", "Initializing to Chapter " + String.valueOf(c));
                     tv.cc = null;
-                    tv.forceChapter(c, mPrefs.getInt("current_position", 0));
+                    tv.forceChapter(c);
+                    tv.forcePosition(p);
                 }
             }).start();
 
@@ -99,8 +114,8 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
         super.onPause();
         SharedPreferences.Editor ed = mPrefs.edit();
         ed.putInt("current_position", tv.getCurrentPosition());
-        ed.putInt("current_chapter", tv.getM_chapter());
-        Log.i("Main", "Saving chapter to " + String.valueOf(tv.getM_chapter() + " position " + String.valueOf(tv.getCurrentPosition())));
+        ed.putInt("current_chapter", tv.getCurrent_chapter());
+        Log.i("Main", "Saving chapter to " + String.valueOf(tv.getCurrent_chapter() + " position " + String.valueOf(tv.getCurrentPosition())));
         ed.commit();
     }
 
@@ -108,6 +123,16 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
     protected void onResume() {
         super.onResume();
 
+    }
+    @Override
+    protected void onStop(){
+        super.onStop();
+
+    }
+
+    @Override
+    protected void onStart(){
+        super.onStart();
     }
 
     public void announce(String what) {
@@ -207,7 +232,23 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
         timer.start();
         tv.stop();
     }
+    private static final int BUFFER_SIZE = 8192;
 
+    /**
+     * Reads all bytes from an input stream and writes them to an output stream.
+     */
+    private long copy(InputStream source, OutputStream sink)
+            throws IOException
+    {
+        long nread = 0L;
+        byte[] buf = new byte[BUFFER_SIZE];
+        int n;
+        while ((n = source.read(buf)) > 0) {
+            sink.write(buf, 0, n);
+            nread += n;
+        }
+        return nread;
+    }
     private void loadFile( final InputStream in) {
         Log.i("Main", "Loading ");
         announce("Loading File");
@@ -216,7 +257,20 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
                 @Override
                 public void run() {
                     try {
-                        tv.init(in);
+                        String filename = "currentfile";
+                        FileOutputStream outputStream;
+
+                        try {
+                            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+                            copy(in,outputStream);
+                            outputStream.close();
+                            in.close();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        InputStream local = openFileInput("currentfile");
+                        EpubExtractor epubExtractor = new EpubExtractor(local).invoke();
+                        tv.init(epubExtractor.getChapters(),epubExtractor.getAuthor(),epubExtractor.getTitle());
                         stopTV();
 
                     } catch (IOException e) {
@@ -224,13 +278,11 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
                     }
                 }
             }).start();
-            SharedPreferences.Editor ed = mPrefs.edit();
-            //ed.putString("current_file_path", filePath);
-            //ed.commit();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
     @Override
     public void running(Boolean running) {
         if (running) {
@@ -293,9 +345,11 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
             }
             case ACTIVITY_CHOOSE_CHAPTER: {
                 if (resultCode == RESULT_OK) {
-                    int c = data.getIntExtra("result", 0);
-                    tv.forceChapter(c);
-                    announce("Chapter: " + String.valueOf(c + 2));
+                    int chosen_chapter = data.getIntExtra("result", 0);
+                    tv.forceChapter(chosen_chapter);
+                    tv.forcePosition(0);
+
+                    announce("Chapter: " + String.valueOf(chosen_chapter + 2));
                     stopTV();
                 }
                 break;
@@ -342,9 +396,10 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
                 return true;
             case action_choose_sample:
                 try {
-                    InputStream k = getAssets().open("habits.epub");
+                    InputStream in = getAssets().open("habits.epub");
                     announce("Loading File");
-                    tv.init(k);
+                    EpubExtractor epubExtractor = new EpubExtractor(in).invoke();
+                    tv.init(epubExtractor.getChapters(),epubExtractor.getAuthor(),epubExtractor.getTitle());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -360,4 +415,58 @@ public class MainActivity extends Activity implements RunningListener, OnChapter
         }
     }
 
+    private class EpubExtractor {
+        private InputStream in;
+        private String title;
+        private String author;
+        private ArrayList<String[]> chapters;
+
+        public EpubExtractor(InputStream in) {
+            this.in = in;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public String getAuthor() {
+            return author;
+        }
+
+        public ArrayList<String[]> getChapters() {
+            return chapters;
+        }
+        public String extract_from_epub(Resource resource) {
+            //Decode epub content
+            String decoded = null;
+            try {
+                decoded = new String(resource.getData(), resource.getInputEncoding());
+            } catch (IOException e) {
+                Log.e("Error", "Failed to decode");
+                e.printStackTrace();
+            }
+            if (decoded.contains("<body")) {
+                decoded = decoded.substring(decoded.indexOf("<body"));
+            } else {
+                decoded = " ";
+            }
+            //Split it
+            decoded = Html.fromHtml(decoded).toString().replaceAll("(?s)<!--.*?-->", "");
+            return decoded;
+        }
+        public EpubExtractor invoke() throws IOException {
+            Book book = (new EpubReader()).readEpub(in);
+            title = book.getMetadata().getTitles().get(0);
+            author = book.getMetadata().getAuthors().get(0).toString();
+            chapters = new ArrayList<String[]>(book.getSpine().getSpineReferences().size());
+            for (int i = 0; i < book.getSpine().getSpineReferences().size(); i++)
+                chapters.add(null);
+
+            for(int c=0;c<chapters.size();c++) {
+                String decoded = extract_from_epub(book.getSpine().getSpineReferences().get(c).getResource());
+                chapters.set(c, decoded.split("\\s"));
+            }
+            return this;
+        }
+    }
 }
