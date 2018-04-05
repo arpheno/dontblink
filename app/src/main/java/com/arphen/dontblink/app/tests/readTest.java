@@ -1,4 +1,4 @@
-package com.arphen.ownspritz.app.tests;
+package com.arphen.dontblink.app.tests;
 
 import android.test.InstrumentationTestCase;
 

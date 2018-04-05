@@ -1,4 +1,4 @@
-package com.arphen.ownspritz.app;
+package com.arphen.dontblink.app;
 
 import android.app.Activity;
 import android.content.Context;
@@ -26,11 +26,10 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
     private String author;
 
 
-    private ArrayList<String[]> book_as_list_of_arrays_of_words;
-
-    private boolean m_init;
+    private ArrayList<String[]> book_as_list_of_arrays_of_words=new ArrayList<String[]>();
+    private boolean m_init=false;
     private ArrayList<RunningListener> runningListeners;
-    private int pos = 0;
+    private int current_position = 0;
     private int current_chapter = 0; // Needs to be initialized to -1 so we get a chapter changed event.
     private ArrayList<OnChapterChangedListener> chapterChangedListeners;
     private long lastChapterChanged;
@@ -52,7 +51,7 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
 
     public String getPreview(int offset, int amount) {
             StringBuilder result = new StringBuilder();
-            int temppos = pos +offset;
+            int temppos = current_position +offset;
             while(temppos<0){
                 temppos++;
                 amount--;
@@ -96,8 +95,8 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
         this.author=author;
         this.title = title;
         post(setAuthorAndTitle);
-        this.pos = 0;
-        forceChapter(this.pos);
+        this.current_position = 0;
+        forceChapter(this.current_position);
         this.m_init = true;
         Log.i("Blinker", "Initializing Blinker finished");
     }
@@ -164,18 +163,18 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
 
 
     private String next() {
-        pos++;
-        if (pos >= book_as_list_of_arrays_of_words.get(current_chapter).length) {
+        current_position++;
+        if (current_position >= book_as_list_of_arrays_of_words.get(current_chapter).length) {
             Log.i("Main", "switching chapter");
             forceChapter(current_chapter + 1);
-            pos = 0;
+            current_position = 0;
         }
         if (current_chapter == getNumberOfChapters()) {
             stop(); // Stop playing and notify listeners
             return "End of Book";
         }
 
-        return book_as_list_of_arrays_of_words.get(current_chapter)[pos];
+        return book_as_list_of_arrays_of_words.get(current_chapter)[current_position];
 
     }
 
@@ -189,7 +188,7 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
             public void run() {
                 while (m_playing) {
                     m_word = next();
-                    //sb.setProgress(pos);
+                    //sb.setProgress(current_position);
                     post(new Runnable() {
                         @Override
                         public void run() {
@@ -199,13 +198,13 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
                     try {
                         double delaymult = 1;
                         if (m_word.contains("."))
-                            delaymult *= 1.7;
+                            delaymult *= 1.3;
                         if (m_word.contains(","))
-                            delaymult *= 1.3;
+                            delaymult *= 1.1;
                         if (m_word.length() > 6)
-                            delaymult *= 1.3;
+                            delaymult *= 1.1;
                         if (m_word.length() > 10)
-                            delaymult *= 1.3;
+                            delaymult *= 1.2;
                         Thread.sleep((long) (delaymult * 60000 / m_wpm));
 
                     } catch (InterruptedException e) {
@@ -222,7 +221,7 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
     public void setPosition(int position) {
         if (m_init) {
             forcePosition(position);
-            if (pos == 0) {
+            if (current_position == 0) {
                 forceChapter(current_chapter - 1);
                 forcePosition(0);
             }
@@ -234,8 +233,6 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
 
 
     public void forceChapter(final int c) {
-
-
         current_chapter = c;
         Log.i("BlinkView", "loaded text");
         final String text = book_as_list_of_arrays_of_words.get(current_chapter)[0];
@@ -254,7 +251,7 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
     }
 
     public void forcePosition(int p) {
-        pos = p;
+        current_position = p;
     }
 
     public int getCurrent_chapter() {
@@ -281,9 +278,8 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
     }
 
     public int getCurrentPosition() {
-        if (m_init)
-            return pos;
-        return 0;
+        return current_position;
+
     }
 
 

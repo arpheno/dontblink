@@ -1,4 +1,4 @@
-package com.arphen.ownspritz.app;
+package com.arphen.dontblink.app;
 
 public interface RunningListener
 {

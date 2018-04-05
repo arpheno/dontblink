@@ -16,8 +16,11 @@
     <item android:id="@+id/action_choose_sample"
         android:showAsAction="never"
         android:title="Load Sample Book"/>
-    <item android:id="@+id/action_choose_library"
+    <item android:id="@+id/action_browse_library"
         android:showAsAction="never"
         android:title="Library"/>
+    <item android:id="@+id/action_choose_library"
+        android:showAsAction="never"
+        android:title="Sync"/>
 
 </menu>

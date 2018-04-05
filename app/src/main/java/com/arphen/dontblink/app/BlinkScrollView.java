@@ -1,4 +1,4 @@
-package com.arphen.ownspritz.app;
+package com.arphen.dontblink.app;
 
 import android.content.Context;
 import android.content.res.TypedArray;

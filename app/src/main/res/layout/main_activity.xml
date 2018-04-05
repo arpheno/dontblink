@@ -3,8 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000"
-    tools:context="com.arphen.ownspritz.app.MainActivity">
-    <com.arphen.ownspritz.app.BlinkView
+    tools:context="com.arphen.dontblink.app.MainActivity">
+    <com.arphen.dontblink.app.BlinkView
         android:id="@+id/blinkview"
         android:layout_width="593dp"
         android:layout_height="84dp"
@@ -34,13 +34,13 @@
         android:layout_toLeftOf="@+id/numberPicker" />
 
 
-    <com.arphen.ownspritz.app.BlinkProgressBar
+    <com.arphen.dontblink.app.BlinkProgressBar
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:id="@+id/seekBar"
         android:layout_alignParentBottom="true"/>
 
-    <com.arphen.ownspritz.app.BlinkNumberPicker
+    <com.arphen.dontblink.app.BlinkNumberPicker
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/numberPicker"
@@ -50,7 +50,7 @@
     <view
         android:layout_width="200dp"
         android:layout_height="?android:actionBarSize"
-        class="com.arphen.ownspritz.app.BlinkAnnouncement"
+        class="com.arphen.dontblink.app.BlinkAnnouncement"
         android:id="@+id/announcement"
         android:layout_above="@id/previewTop"
         android:layout_toLeftOf="@id/numberPicker"
@@ -64,7 +64,7 @@
         android:textIsSelectable="false"
         android:layout_marginBottom="-8dp" />
 
-    <com.arphen.ownspritz.app.BlinkAnnouncement
+    <com.arphen.dontblink.app.BlinkAnnouncement
         android:layout_width="match_parent"
         android:layout_height="45dp"
         android:id="@+id/authortitle"

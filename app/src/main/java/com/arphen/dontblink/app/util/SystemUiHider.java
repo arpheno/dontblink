@@ -1,4 +1,4 @@
-package com.arphen.ownspritz.app.util;
+package com.arphen.dontblink.app.util;
 
 import android.app.Activity;
 import android.os.Build;
@@ -20,7 +20,7 @@ import android.view.View;
  * "http://developer.android.com/design/get-started/ui-overview.html#system-bars"
  * > System Bars</a>.
  *
- * @see android.view.View#setSystemUiVisibility(int)
+ * @see View#setSystemUiVisibility(int)
  * @see android.view.WindowManager.LayoutParams#FLAG_FULLSCREEN
  */
 public abstract class SystemUiHider {

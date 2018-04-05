@@ -1,4 +1,4 @@
-package com.arphen.ownspritz.app;
+package com.arphen.dontblink.app;
 
 import android.app.Activity;
 import android.content.Context;
