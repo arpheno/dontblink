@@ -11,6 +11,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.ListAdapter;
+import android.widget.SimpleAdapter;
 
 import com.arphen.dontblink.app.util.SystemUiHider;
 
@@ -18,7 +19,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 
@@ -52,19 +55,30 @@ public class LibraryBrowser extends Activity {
             Scanner sc = new Scanner(library);
             while (sc.hasNextLine()) {
                 lines.add(sc.nextLine());
-
             }
-
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        List<String> better = new ArrayList<String>();
-        for(String n:lines){
-            better.add(String.format("%s - %s",n.split("---")[0],n.split("---")[1]));
+        List<Map<String, String>> data = new ArrayList<Map<String, String>>();
+        for (String n : lines) {
+            Log.i("Files", String.format("Chosen files%s", n));
+            Map<String, String> datum = new HashMap<String, String>(2);
+            datum.put("title", n.split("---")[1]);
+
+            int wordcount = 0;
+            try {
+                wordcount = Integer.parseInt(n.split("---")[3]);
+            } catch (Exception e) {
+            }
+            String subtitle = String.format("%s %s words %s hours %s minutes", n.split("---")[0], wordcount, wordcount / 30000, (wordcount % 30000) / 500);
+            datum.put("author", subtitle);
+            data.add(datum);
         }
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1, better);
+        SimpleAdapter adapter = new SimpleAdapter(this, data,
+                R.layout.book_item,
+                new String[]{"title", "author"},
+                new int[]{android.R.id.text1,
+                        android.R.id.text2});
 
         gridView.setAdapter(adapter);
 

@@ -8,5 +8,12 @@
         <attr name="metaButtonBarStyle" format="reference" />
         <attr name="metaButtonBarButtonStyle" format="reference" />
     </declare-styleable>
+    <!-- The preferred padding along the start edge of list items. -->
+    <attr name="listPreferredItemPaddingStart" format="dimension" />
+    <!-- The preferred padding along the end edge of list items. -->
+    <attr name="listPreferredItemPaddingEnd" format="dimension" />
+    <attr name="textAppearanceListItemSecondary" format="reference" />
+    <!-- The preferred TextAppearance for the primary text of small list items. -->
+
 
 </resources>

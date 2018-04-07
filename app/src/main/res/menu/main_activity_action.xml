@@ -22,5 +22,8 @@
     <item android:id="@+id/action_choose_library"
         android:showAsAction="never"
         android:title="Sync"/>
+    <item android:id="@+id/action_scan_library"
+    android:showAsAction="never"
+    android:title="Index"/>
 
 </menu>
