@@ -1,7 +1,17 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Search, should appear as action button -->
-      <item android:id="@+id/action_scan_library"
-        android:icon="@drawable/ic_scan"
-        android:title="Scan for books"
-        android:showAsAction="always|withText" />
+    <item
+        android:id="@+id/action_sort_by_author"
+        android:title="author"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_sort_by_title"
+        android:title="Title"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_sort_by_rating"
+        android:icon="@android:drawable/btn_star_big_off"
+        android:title="Rating"
+        app:showAsAction="always" />
 </menu>

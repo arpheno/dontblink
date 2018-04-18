@@ -9,7 +9,7 @@ import android.widget.TextView;
 /**
  * TODO: document your custom view class.
  */
-public class BlinkAnnouncement extends TextView implements OnChapterChangedListener {
+public class BlinkAnnouncement extends TextView implements OnChapterChangedListener, OnAchievementListener {
 
     private Runnable hide;
     private Runnable show;
@@ -76,6 +76,17 @@ public class BlinkAnnouncement extends TextView implements OnChapterChangedListe
             }
         });
 
+        show();
+    }
+
+    @Override
+    public void onAchievement(String text) {
+        post(new Runnable() {
+            @Override
+            public void run() {
+                setText(text);
+            }
+        });
         show();
     }
 }

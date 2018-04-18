@@ -4,81 +4,98 @@
     android:layout_height="match_parent"
     android:background="#000000"
     tools:context="com.arphen.dontblink.app.MainActivity">
+
     <com.arphen.dontblink.app.BlinkView
         android:id="@+id/blinkview"
         android:layout_width="593dp"
         android:layout_height="84dp"
         android:layout_centerVertical="true"
-        android:gravity="center_vertical"
-        android:layout_marginLeft="-150dp"/>
+        android:layout_marginLeft="-150dp"
+        android:gravity="center_vertical" />
 
     <TextView
+        android:id="@+id/previewTop"
         android:layout_width="match_parent"
         android:layout_height="63dp"
-        android:layout_marginBottom="-8dp"
-        android:textSize="20dp"
-        android:textColor="#AAAAAA"
-        android:id="@+id/previewTop"
         android:layout_above="@id/blinkview"
+        android:layout_marginBottom="-8dp"
+        android:layout_toLeftOf="@+id/numberPicker"
         android:gravity="center_horizontal|top"
-        android:layout_toLeftOf="@+id/numberPicker" />
+        android:textColor="#AAAAAA"
+        android:textSize="20dp" />
 
     <TextView
+        android:id="@+id/previewBot"
         android:layout_width="match_parent"
         android:layout_height="52dp"
-        android:id="@+id/previewBot"
-        android:textColor="#AAAAAA"
-        android:textSize="20dp"
-        android:gravity="center_horizontal|top"
         android:layout_below="@id/blinkview"
-        android:layout_toLeftOf="@+id/numberPicker" />
+        android:layout_toLeftOf="@+id/numberPicker"
+        android:gravity="center_horizontal|top"
+        android:textColor="#AAAAAA"
+        android:textSize="20dp" />
 
-
-    <com.arphen.dontblink.app.BlinkProgressBar
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/seekBar"
-        android:layout_alignParentBottom="true"/>
 
     <com.arphen.dontblink.app.BlinkNumberPicker
+        android:id="@+id/numberPicker"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/numberPicker"
         android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"/>
+        android:layout_centerVertical="true" />
 
     <view
+        android:id="@+id/announcement"
+        class="com.arphen.dontblink.app.BlinkAnnouncement"
         android:layout_width="200dp"
         android:layout_height="?android:actionBarSize"
-        class="com.arphen.dontblink.app.BlinkAnnouncement"
-        android:id="@+id/announcement"
         android:layout_above="@id/previewTop"
+        android:layout_marginBottom="-8dp"
         android:layout_toLeftOf="@id/numberPicker"
-        android:text="Hallo Welt"
-        android:gravity="center_vertical|left"
-        android:textColor="#00a3ff"
-        android:typeface="sans"
-        android:textSize="20dp"
         android:alpha="0"
-        android:textStyle="bold"
+        android:gravity="center_vertical|left"
+        android:text="Hallo Welt"
+        android:textColor="#00a3ff"
         android:textIsSelectable="false"
-        android:layout_marginBottom="-8dp" />
+        android:textSize="20dp"
+        android:textStyle="bold"
+        android:typeface="sans" />
 
     <com.arphen.dontblink.app.BlinkAnnouncement
+        android:id="@+id/authortitle"
         android:layout_width="match_parent"
         android:layout_height="45dp"
-        android:id="@+id/authortitle"
-        android:textColor="#FFFFFF"
-        android:textSize="20dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
         android:layout_gravity="center_horizontal|bottom"
         android:layout_marginBottom="20dp"
-        android:gravity="left"
-        android:layout_alignParentLeft="true"
         android:layout_marginLeft="0dp"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="285dp" />
+        android:layout_marginTop="285dp"
+        android:gravity="left"
+        android:textColor="#FFFFFF"
+        android:textSize="20dp" />
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="20dp"
+        android:layout_alignParentBottom="true">
+
+        <com.arphen.dontblink.app.BlinkProgressBar
+            android:id="@+id/seekBar"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+        <ProgressBar
+            android:id="@+id/progressBar3"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="3dp"
+            android:layout_alignParentBottom="true"
+
+            />
+
+
+    </RelativeLayout>
 
 
     <!-- This FrameLayout insets its children based on system windows using
          android:fitsSystemWindows. -->
-    </RelativeLayout>
+</RelativeLayout>

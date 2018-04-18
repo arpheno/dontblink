@@ -11,10 +11,13 @@ import android.widget.TextView;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 
 public class BlinkView extends RelativeLayout implements View.OnClickListener {
     public Runnable cc;
+    public ArrayList<String[]> book_as_list_of_arrays_of_words = new ArrayList<String[]>();
     private Runnable setAuthorAndTitle;
     private TextView left;
     private TextView middle;
@@ -24,57 +27,60 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
     private boolean m_playing;
     private String m_word;
     private String author;
-
-
-    private ArrayList<String[]> book_as_list_of_arrays_of_words=new ArrayList<String[]>();
-    private boolean m_init=false;
-    private ArrayList<RunningListener> runningListeners;
+    private Set<Integer> run_limits = new HashSet<Integer>();
+    private boolean m_init = false;
     private int current_position = 0;
     private int current_chapter = 0; // Needs to be initialized to -1 so we get a chapter changed event.
-    private ArrayList<OnChapterChangedListener> chapterChangedListeners;
-    private long lastChapterChanged;
     private String title;
+    private ArrayList<OnChapterChangedListener> chapterChangedListeners;
+    private ArrayList<RunningListener> runningListeners;
+    private ArrayList<OnAchievementListener> achievementListeners = new ArrayList<OnAchievementListener>();
+    private int current_word_run = 0;
 
     public BlinkView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        run_limits.add(1000);
+        run_limits.add(2500);
+        run_limits.add(5000);
+        run_limits.add(10000);
+        run_limits.add(20000);
         View view = LayoutInflater.from(context).inflate(R.layout.spritzview, this, true);
-        book_as_list_of_arrays_of_words=new ArrayList<String[]>();
+        book_as_list_of_arrays_of_words = new ArrayList<String[]>();
         left = (TextView) findViewById(R.id.textView);
         middle = (TextView) findViewById(R.id.textView2);
         right = (TextView) findViewById(R.id.textView3);
         runningListeners = new ArrayList<RunningListener>();
         chapterChangedListeners = new ArrayList<OnChapterChangedListener>();
-        lastChapterChanged = System.currentTimeMillis();
         initRunnables();
     }
 
+    public int getChapterLength(int chapter) {
+        return book_as_list_of_arrays_of_words.get(chapter).length;
+    }
+
+    public int getBookLength() {
+        return book_as_list_of_arrays_of_words.stream().map((a) -> a.length).reduce((a, b) -> a + b).get();
+    }
 
     public String getPreview(int offset, int amount) {
-            StringBuilder result = new StringBuilder();
-            int temppos = current_position +offset;
-            while(temppos<0){
-                temppos++;
-                amount--;
-            }
-            while(temppos+amount >= book_as_list_of_arrays_of_words.get(current_chapter).length){
-                amount--;
-            }
+        StringBuilder result = new StringBuilder();
+        int temppos = current_position + offset;
+        while (temppos < 0) {
+            temppos++;
+            amount--;
+        }
+        while (temppos + amount >= book_as_list_of_arrays_of_words.get(current_chapter).length) {
+            amount--;
+        }
 
 
-            for(int i=0;i<amount;i++){
-                temppos++;
-                result.append(book_as_list_of_arrays_of_words.get(current_chapter)[temppos]).append(" ");
-            }
+        for (int i = 0; i < amount; i++) {
+            temppos++;
+            result.append(book_as_list_of_arrays_of_words.get(current_chapter)[temppos]).append(" ");
+        }
         return result.toString();
     }
 
-    public void addRunningListener(RunningListener listener) {
-        runningListeners.add(listener);
-    }
-
-    public void addChapterChangedListener(OnChapterChangedListener listener) {
-        chapterChangedListeners.add(listener);
-    }
 
     public boolean is_init() {
         return m_init;
@@ -88,11 +94,11 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
         m_wpm = wpm;
     }
 
-    public void init(ArrayList<String[]> book,String author,String title) throws IOException {
+    public void init(ArrayList<String[]> book, String author, String title) throws IOException {
         Log.i("Blinker", "Initializing Blinker");
 
         this.book_as_list_of_arrays_of_words = book;
-        this.author=author;
+        this.author = author;
         this.title = title;
         post(setAuthorAndTitle);
         this.current_position = 0;
@@ -161,8 +167,17 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
         }
     }
 
-
     private String next() {
+        current_word_run++;
+        current_word_run++;
+        if (run_limits.contains(current_word_run)) {
+            for (OnAchievementListener l : achievementListeners) {
+                changeWpm(m_wpm * 1.03);
+                l.onAchievement(String.format("%d words streak!", current_word_run));
+            }
+
+        }
+
         current_position++;
         if (current_position >= book_as_list_of_arrays_of_words.get(current_chapter).length) {
             Log.i("Main", "switching chapter");
@@ -173,8 +188,8 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
             stop(); // Stop playing and notify listeners
             return "End of Book";
         }
-
         return book_as_list_of_arrays_of_words.get(current_chapter)[current_position];
+
 
     }
 
@@ -182,13 +197,14 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
         for (RunningListener l : runningListeners) {
             l.running(true);
         }
+        current_word_run = 0;
         m_playing = true;
         timer = new Thread(new Runnable() {
             @Override
             public void run() {
                 while (m_playing) {
                     m_word = next();
-                    //sb.setProgress(current_position);
+                    //seekBar.setProgress(current_position);
                     post(new Runnable() {
                         @Override
                         public void run() {
@@ -196,16 +212,7 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
                         }
                     });
                     try {
-                        double delaymult = 1;
-                        if (m_word.contains("."))
-                            delaymult *= 1.3;
-                        if (m_word.contains(","))
-                            delaymult *= 1.1;
-                        if (m_word.length() > 6)
-                            delaymult *= 1.1;
-                        if (m_word.length() > 10)
-                            delaymult *= 1.2;
-                        Thread.sleep((long) (delaymult * 60000 / m_wpm));
+                        Thread.sleep((long) (60000 / m_wpm));
 
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -215,9 +222,7 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
         });
         timer.start();
     }
-    public int current_chapter_length(){
-        return book_as_list_of_arrays_of_words.get(current_chapter).length;
-    }
+
     public void setPosition(int position) {
         if (m_init) {
             forcePosition(position);
@@ -228,8 +233,6 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
             setText(next());
         }
     }
-
-
 
 
     public void forceChapter(final int c) {
@@ -283,4 +286,15 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
     }
 
 
+    public void addAchievementListener(OnAchievementListener listener) {
+        achievementListeners.add(listener);
+    }
+
+    public void addRunningListener(RunningListener listener) {
+        runningListeners.add(listener);
+    }
+
+    public void addChapterChangedListener(OnChapterChangedListener listener) {
+        chapterChangedListeners.add(listener);
+    }
 }

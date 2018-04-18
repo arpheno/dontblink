@@ -62,7 +62,7 @@ public class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
         do {
             FileList result = mService.files().list()
                     .setQ("mimeType='application/epub+zip'")
-                    .setPageSize(10)
+                    .setPageSize(100)
                     .setFields("nextPageToken, files(id, name)")
                     .setPageToken(pageToken)
                     .execute();

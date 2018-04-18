@@ -12,13 +12,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.NumberPicker;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -27,7 +27,6 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.drive.DriveScopes;
-import com.arphen.dontblink.app.util.SystemUiHider;
 
 import java.io.*;
 import java.util.Arrays;
@@ -38,20 +37,12 @@ import pub.devrel.easypermissions.EasyPermissions;
 
 import static com.arphen.dontblink.app.R.id.action_choose_chapter;
 import static com.arphen.dontblink.app.R.id.action_choose_file;
-import static com.arphen.dontblink.app.R.id.action_choose_library;
+import static com.arphen.dontblink.app.R.id.action_sync_library;
 import static com.arphen.dontblink.app.R.id.action_choose_sample;
 import static com.arphen.dontblink.app.R.id.action_browse_library;
 
-import static com.arphen.dontblink.app.R.id.action_scan_library;
-import static com.google.android.gms.drive.Drive.getDriveResourceClient;
-import static java.lang.Math.round;
+import static com.arphen.dontblink.app.R.id.action_index_library;
 
-/**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
- *
- * @see SystemUiHider
- */
 public class MainActivity extends Activity implements EasyPermissions.PermissionCallbacks, RunningListener, OnChapterChangedListener {
 
     private static final int ACTIVITY_BROWSE_LIBRARY = 666;
@@ -62,18 +53,13 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
     static final int REQUEST_AUTHORIZATION = 1001;
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
     static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
-    public GestureDetector gestureScanner;
-    public BlinkProgressBar sb;
-    private double wpmthresh;
-    private int height;
-    private int width;
-    private TextView wpmtv;
+    public BlinkProgressBar seekBar;
+    public ProgressBar progressBar;
     private BlinkView tv;
-    private int interact_sb;
     private BlinkAnnouncement an;
-    private BlinkNumberPicker np;
-    private TextView pt;
-    private TextView pb;
+    private BlinkNumberPicker wpmChooser;
+    private TextView previewTop;
+    private TextView previewBottom;
     private BlinkAnnouncement at;
     private MenuItem chapterfield;
     private SharedPreferences mPrefs;
@@ -85,8 +71,7 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mPrefs = this.getSharedPreferences(
-                "com.arphen.dontblink", Context.MODE_PRIVATE);
+        mPrefs = this.getSharedPreferences("com.arphen.dontblink", Context.MODE_PRIVATE);
         setUpUi();
         populateViews();
         linkViews();
@@ -94,10 +79,6 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
     }
 
     private void initFromPrefs() {
-        // String current_file_path = mPrefs.getString("current_file_path", "");
-        // if (current_file_path != "")
-        //     loadFile(current_file_path);
-
         final int c = mPrefs.getInt("current_chapter", -1);
         final int p = mPrefs.getInt("current_position", 0);
         Log.i("Main", "Initializing to Chapter " + String.valueOf(c));
@@ -163,11 +144,11 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
 
     private void linkViews() {
 
-        np.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+        wpmChooser.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
             public void onValueChange(NumberPicker numberPicker, int i, int i2) {
                 tv.changeWpm((i2 - 250) * 10);
-                np.show();
+                wpmChooser.show();
             }
         });
         tv.setOnClickListener(new View.OnClickListener() {
@@ -183,14 +164,15 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
             }
         });
         /* Link Components */
-        tv.addChapterChangedListener(sb);
+        tv.addChapterChangedListener(seekBar);
         tv.addChapterChangedListener(an);
+        tv.addAchievementListener(an);
         tv.addChapterChangedListener(this);
-        tv.addRunningListener(sb);
-        tv.addRunningListener(np);
+        tv.addRunningListener(seekBar);
+        tv.addRunningListener(wpmChooser);
         tv.addRunningListener(this);
-        sb.linkBlinkView(tv);
-        sb.setOnSeekBarChangeListener(
+        seekBar.linkBlinkView(tv);
+        seekBar.setOnSeekBarChangeListener(
                 new SeekBar.OnSeekBarChangeListener() {
                     @Override
                     public void onProgressChanged(SeekBar arg0, int arg1, boolean arg2) {
@@ -202,12 +184,12 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
 
                     @Override
                     public void onStartTrackingTouch(SeekBar seekBar) {
-                        sb.show();
+                        MainActivity.this.seekBar.show();
                     }
 
                     @Override
                     public void onStopTrackingTouch(SeekBar seekBar) {
-                        sb.show();
+                        MainActivity.this.seekBar.show();
                     }
                 }
         );
@@ -225,16 +207,17 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
 
     private void populateViews() {
         tv = (BlinkView) findViewById(R.id.blinkview);
-        sb = (BlinkProgressBar) findViewById(R.id.seekBar);
+        seekBar = (BlinkProgressBar) findViewById(R.id.seekBar);
         an = (BlinkAnnouncement) findViewById(R.id.announcement);
-        np = (BlinkNumberPicker) findViewById(R.id.numberPicker);
-        pt = (TextView) findViewById(R.id.previewTop);
-        pb = (TextView) findViewById(R.id.previewBot);
+        wpmChooser = (BlinkNumberPicker) findViewById(R.id.numberPicker);
+        previewTop = (TextView) findViewById(R.id.previewTop);
+        previewBottom = (TextView) findViewById(R.id.previewBot);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar3);
     }
 
     public void runTV() {
-        pt.setText("");
-        pb.setText("");
+        previewTop.setText("");
+        previewBottom.setText("");
         tv.run();
     }
 
@@ -247,8 +230,8 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        pt.setText(top);
-                        pb.setText(bot);
+                        previewTop.setText(top);
+                        previewBottom.setText(bot);
                     }
                 });
             }
@@ -310,14 +293,11 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
 
     @Override
     public void running(Boolean running) {
+        View decorView = getWindow().getDecorView();
         if (running) {
-            View decorView = getWindow().getDecorView();
-// Hide the status bar.
             int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN + View.SYSTEM_UI_FLAG_LAYOUT_STABLE + View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
             decorView.setSystemUiVisibility(uiOptions);
-            //getActionBar().hide();
         } else {
-            View decorView = getWindow().getDecorView();
             decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN + View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
         }
     }
@@ -333,6 +313,11 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
                         chapterfield.setTitle(String.format("Chapter %s", c + 1));
                         View decorView = getWindow().getDecorView();
                         decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN + View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+                        int words_read_so_far = 0;
+                        for (int i = 0; i < c; i++) words_read_so_far += tv.getChapterLength(i);
+                        progressBar.setMax(tv.getBookLength());
+                        progressBar.setProgress(words_read_so_far);
+                        progressBar.setSecondaryProgress(words_read_so_far + tv.getChapterLength(c));
                     }
                 });
                 try {
@@ -442,42 +427,22 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
         // Handle presses on the action bar items
         switch (item.getItemId()) {
             case action_choose_file:
-                Intent chooseFile;
-                Intent intent;
-                chooseFile = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                chooseFile.setType("application/epub+zip");
-                intent = Intent.createChooser(chooseFile, "Choose a file");
-                startActivityForResult(intent, ACTIVITY_CHOOSE_FILE);
+                choose_file();
                 return true;
             case action_choose_chapter:
-                Intent chooseChapter;
-                chooseChapter = new Intent(getApplicationContext(), ChapterChooser.class);
-                int chapters = tv.getNumberOfChapters();
-                chooseChapter.putExtra("chapters", chapters);
-                if (chapters != 0)
-                    startActivityForResult(chooseChapter, ACTIVITY_CHOOSE_CHAPTER);
+                choose_chapter();
                 return true;
             case action_browse_library:
                 Intent browseLibrary = new Intent(getApplicationContext(), LibraryBrowser.class);
                 startActivityForResult(browseLibrary, ACTIVITY_BROWSE_LIBRARY);
                 return true;
             case action_choose_sample:
-                try {
-                    InputStream in = getAssets().open("habits.epub");
-                    announce("Loading File");
-                    EpubExtractor epubExtractor = new EpubExtractor(in).invoke();
-                    tv.init(epubExtractor.getChapters(), epubExtractor.getAuthor(), epubExtractor.getTitle());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                load_sample_book();
                 return true;
-            case action_choose_library:
-                mCredential = GoogleAccountCredential.usingOAuth2(
-                        getApplicationContext(), Arrays.asList(SCOPES))
-                        .setBackOff(new ExponentialBackOff());
-                getResultsFromApi();
+            case action_sync_library:
+                sync_google_drive();
                 return true;
-            case action_scan_library:
+            case action_index_library:
                 scan_library();
                 return true;
             default:
@@ -485,34 +450,65 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
         }
     }
 
+    private void sync_google_drive() {
+        mCredential = GoogleAccountCredential.usingOAuth2(
+                getApplicationContext(), Arrays.asList(SCOPES))
+                .setBackOff(new ExponentialBackOff());
+        getResultsFromApi();
+    }
+
+    private void load_sample_book() {
+        try {
+            InputStream in = getAssets().open("The Idiot.epub");
+            announce("Loading File");
+            EpubExtractor epubExtractor = new EpubExtractor(in).invoke();
+            tv.init(epubExtractor.getChapters(), epubExtractor.getAuthor(), epubExtractor.getTitle());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void choose_file() {
+        Intent chooseFile;
+        Intent intent;
+        chooseFile = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        chooseFile.setType("application/epub+zip");
+        intent = Intent.createChooser(chooseFile, "Choose a file");
+        startActivityForResult(intent, ACTIVITY_CHOOSE_FILE);
+    }
+
+    private void choose_chapter() {
+        Intent chooseChapter;
+        chooseChapter = new Intent(getApplicationContext(), ChapterChooser.class);
+        int chapters = tv.getNumberOfChapters();
+        chooseChapter.putExtra("chapters", chapters);
+        if (chapters != 0)
+            startActivityForResult(chooseChapter, ACTIVITY_CHOOSE_CHAPTER);
+    }
+
+    private void delete_library() {
+        deleteFile("LIBRARY");
+    }
     private void scan_library() {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                FileOutputStream library = null;
-                try {
-                    deleteFile("LIBRARY");
-                    library = openFileOutput("LIBRARY", Context.MODE_PRIVATE);
-
-
-                    try (Writer w = new OutputStreamWriter(library, "UTF-8")) {
-                        for (String filename : getFilesDir().list())
-
-                            try {
-                                EpubExtractor ex = new EpubExtractor(openFileInput(filename)).invoke();
-
-                                String entry = String.format("%s---%s---%s---%s---0\n", ex.getAuthor(), ex.getTitle(), filename, ex.getNumberOfWords());
-                                Log.i("asd", entry);
-                                w.write(entry);
-                            } catch (Exception e) {
-                            }
-                    } catch (Exception e) {
+                FileLibrary library = null;
+                deleteFile("LIBRARY");
+                library = new FileLibrary();
+                for (String filename : getFilesDir().list()) {
+                    try {
+                        EpubExtractor ex = new EpubExtractor(openFileInput(filename)).invoke();
+                        library.add(new LibraryBook(ex.getAuthor(), ex.getTitle(), filename, GoodReads.getRating(ex.getAuthor(), ex.getTitle()), ex.getNumberOfWords()));
+                    } catch (IOException e) {
                         e.printStackTrace();
                     }
+                }
+                try {
+                    library.save(openFileOutput("LIBRARY", Context.MODE_PRIVATE));
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
-
             }
         }).start();
 
@@ -588,7 +584,6 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
             showGooglePlayServicesAvailabilityErrorDialog(connectionStatusCode);
         }
     }
-
 
     void showGooglePlayServicesAvailabilityErrorDialog(
             final int connectionStatusCode) {

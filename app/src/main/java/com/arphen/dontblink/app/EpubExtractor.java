@@ -6,8 +6,10 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import nl.siegmann.epublib.domain.Book;
+import nl.siegmann.epublib.domain.Metadata;
 import nl.siegmann.epublib.domain.Resource;
 import nl.siegmann.epublib.epub.EpubReader;
 
@@ -43,14 +45,17 @@ class EpubExtractor {
 
     public ArrayList<String[]> getChapters() {
 
-        chapters = new ArrayList<String[]>(book.getSpine().getSpineReferences().size());
-        for (int i = 0; i < book.getSpine().getSpineReferences().size(); i++)
-            chapters.add(null);
+        int size = book.getSpine().getSpineReferences().size();
+        chapters = new ArrayList<String[]>(size);
 
-        for (int c = 0; c < chapters.size(); c++) {
+        for (int c = 0; c < size; c++) {
             String decoded = extract_from_epub(book.getSpine().getSpineReferences().get(c).getResource());
-            chapters.set(c, decoded.split("\\s"));
+            String[] text = decoded.split("\\s");
+            LinkedList<String> temp = TokenizerKt.tokenize(text);
+            String[] tokens = new String[temp.size()];
+            chapters.add(temp.toArray(tokens));
         }
+
         return chapters;
     }
 
@@ -77,7 +82,7 @@ class EpubExtractor {
         book = (new EpubReader()).readEpub(in);
         title = book.getMetadata().getTitles().get(0);
         author = book.getMetadata().getAuthors().get(0).toString();
-
         return this;
     }
+
 }

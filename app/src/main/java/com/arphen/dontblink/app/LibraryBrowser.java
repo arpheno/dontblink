@@ -1,40 +1,40 @@
 package com.arphen.dontblink.app;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.GridView;
-import android.widget.ListAdapter;
 import android.widget.SimpleAdapter;
 
 import com.arphen.dontblink.app.util.SystemUiHider;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
 
-/**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
- *
- * @see SystemUiHider
- */
 public class LibraryBrowser extends Activity {
     private SystemUiHider mSystemUiHider;
     private GridView gridView;
-    private ArrayList<String> lines;
+    FileLibrary library = null;
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu items for use in the action bar
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.library_action, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,48 +44,67 @@ public class LibraryBrowser extends Activity {
         getActionBar().setBackgroundDrawable(null);
         getActionBar().setIcon(R.drawable.app_icon);
         getActionBar().setTitle("Browse your library");
-        gridView = (GridView) findViewById(R.id.gridView);
-        Intent i = getIntent();
-        Log.i("Files", "Chosen files nigger");
-
-        lines = new ArrayList<String>();
-        String[] arr;
+        initialize_grid();
         try {
-            FileInputStream library = openFileInput("LIBRARY");
-            Scanner sc = new Scanner(library);
-            while (sc.hasNextLine()) {
-                lines.add(sc.nextLine());
-            }
+            library = new FileLibrary(openFileInput("LIBRARY"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        List<Map<String, String>> data = new ArrayList<Map<String, String>>();
-        for (String n : lines) {
-            Log.i("Files", String.format("Chosen files%s", n));
-            Map<String, String> datum = new HashMap<String, String>(2);
-            datum.put("title", n.split("---")[1]);
+        build_grid_from_library();
 
-            int wordcount = 0;
-            try {
-                wordcount = Integer.parseInt(n.split("---")[3]);
-            } catch (Exception e) {
-            }
-            String subtitle = String.format("%s %s words %s hours %s minutes", n.split("---")[0], wordcount, wordcount / 30000, (wordcount % 30000) / 500);
+
+    }
+
+
+    private void build_grid_from_library() {
+        List<Map<String, String>> data = new ArrayList<Map<String, String>>();
+        for (LibraryBook n : library) {
+            String template = "%s %s hours %s minutes Goodreads: %s ";
+            String subtitle = String.format(template, n.author, n.hours(), n.minutes(), n.rating);
+
+            Map<String, String> datum = new HashMap<String, String>(2);
+            datum.put("title", n.title);
             datum.put("author", subtitle);
             data.add(datum);
         }
+
         SimpleAdapter adapter = new SimpleAdapter(this, data,
                 R.layout.book_item,
                 new String[]{"title", "author"},
-                new int[]{android.R.id.text1,
-                        android.R.id.text2});
+                new int[]{android.R.id.text1, android.R.id.text2});
 
         gridView.setAdapter(adapter);
+    }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle presses on the action bar items
+        switch (item.getItemId()) {
+            case R.id.action_sort_by_author:
+                library.sort_by_author();
+                build_grid_from_library();
+                return true;
+            case R.id.action_sort_by_rating:
+                library.sort_by_rating();
+                build_grid_from_library();
+                return true;
+            case R.id.action_sort_by_title:
+                library.sort_by_title();
+                build_grid_from_library();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void initialize_grid() {
+        gridView = (GridView) findViewById(R.id.gridView);
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
-                String res = lines.get(position).split("---")[2];
+                String res = library.get(position).path;
                 Log.i("Files", "Chosen files" + res);
                 Intent returnIntent = new Intent();
                 returnIntent.putExtra("result", res);
@@ -93,6 +112,5 @@ public class LibraryBrowser extends Activity {
                 finish();
             }
         });
-
     }
 }

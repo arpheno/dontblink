@@ -19,10 +19,12 @@
     <item android:id="@+id/action_browse_library"
         android:showAsAction="never"
         android:title="Library"/>
-    <item android:id="@+id/action_choose_library"
+    <item
+        android:id="@+id/action_sync_library"
         android:showAsAction="never"
         android:title="Sync"/>
-    <item android:id="@+id/action_scan_library"
+    <item
+        android:id="@+id/action_index_library"
     android:showAsAction="never"
     android:title="Index"/>
 
