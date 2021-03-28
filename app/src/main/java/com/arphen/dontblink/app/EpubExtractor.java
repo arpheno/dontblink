@@ -13,6 +13,8 @@ import nl.siegmann.epublib.domain.Metadata;
 import nl.siegmann.epublib.domain.Resource;
 import nl.siegmann.epublib.epub.EpubReader;
 
+import static com.arphen.dontblink.app.TokenizerKt.tokenize;
+
 /**
  * Created by swozny on 07.04.18.
  */
@@ -51,7 +53,7 @@ class EpubExtractor {
         for (int c = 0; c < size; c++) {
             String decoded = extract_from_epub(book.getSpine().getSpineReferences().get(c).getResource());
             String[] text = decoded.split("\\s");
-            LinkedList<String> temp = TokenizerKt.tokenize(text);
+            LinkedList<String> temp = tokenize(text);
             String[] tokens = new String[temp.size()];
             chapters.add(temp.toArray(tokens));
         }
