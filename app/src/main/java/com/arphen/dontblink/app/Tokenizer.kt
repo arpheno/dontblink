@@ -17,16 +17,16 @@ fun tokenize(words: Array<String>): LinkedList<String> {
         if (cursor + 2 < words.size)
             trigram = """$candidate ${words[cursor + 1]} ${words[cursor + 2]}"""
 
-        if (candidate.any { "!?-.,".contains(it) }) {
-            tokens.add(words[cursor]);
-            cursor++
-            continue
-        }
-        if (bigram.any { "!?-.,".contains(it) }) {
-            tokens.add(bigram)
-            cursor += 2;
-            continue
-        }
+//        if (candidate.any { "!?-.,".contains(it) }) {
+//            tokens.add(words[cursor]);
+//            cursor++
+//            continue
+//        }
+//        if (bigram.any { "!?-.,".contains(it) }) {
+//            tokens.add(bigram)
+//            cursor += 2;
+//            continue
+//        }
         if (Symbols.trigrams_1.contains(trigram.toLowerCase()) || Symbols.trigrams_2.contains(trigram.toLowerCase())) {
             tokens.add(trigram)
             cursor += 3;

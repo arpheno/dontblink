@@ -27,6 +27,13 @@ class EpubExtractor {
 
     public EpubExtractor(InputStream in) {
         this.in = in;
+        try {
+            book = (new EpubReader()).readEpub(in);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        title = book.getMetadata().getTitles().get(0);
+        author = book.getMetadata().getAuthors().get(0).toString();
     }
 
     public String getTitle() {
@@ -80,11 +87,6 @@ class EpubExtractor {
         return decoded;
     }
 
-    public EpubExtractor invoke() throws IOException {
-        book = (new EpubReader()).readEpub(in);
-        title = book.getMetadata().getTitles().get(0);
-        author = book.getMetadata().getAuthors().get(0).toString();
-        return this;
-    }
+
 
 }

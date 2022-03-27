@@ -2,6 +2,7 @@ package com.arphen.dontblink.app;
 
 import android.Manifest;
 import android.accounts.AccountManager;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
@@ -31,6 +32,8 @@ import com.google.api.services.drive.DriveScopes;
 import java.io.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -63,6 +66,7 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
     private BlinkAnnouncement at;
     private MenuItem chapterfield;
     private SharedPreferences mPrefs;
+    private String current_book;
     private static final String[] SCOPES = {DriveScopes.DRIVE};
     private GoogleAccountCredential mCredential;
     private static final String PREF_ACCOUNT_NAME = "accountName";
@@ -79,9 +83,12 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
     }
 
     private void initFromPrefs() {
+        current_book = mPrefs.getString("current_book", "currene");
         final int c = mPrefs.getInt("current_chapter", -1);
         final int p = mPrefs.getInt("current_position", 0);
+        Log.i("Main", "Initializing to book " + current_book);
         Log.i("Main", "Initializing to Chapter " + String.valueOf(c));
+        Log.i("Main", "Initializing to Position " + String.valueOf(p));
 
         if (c != -1) {
             new Thread(new Runnable() {
@@ -89,8 +96,8 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
                 public void run() {
                     InputStream local = null;
                     try {
-                        local = openFileInput("currentfile");
-                        EpubExtractor epubExtractor = new EpubExtractor(local).invoke();
+                        local = openFileInput(current_book);
+                        EpubExtractor epubExtractor = new EpubExtractor(local);
                         tv.init(epubExtractor.getChapters(), epubExtractor.getAuthor(), epubExtractor.getTitle());
                         stopTV();
                         Log.i("Main", "Initializing to Chapter " + String.valueOf(c));
@@ -116,6 +123,7 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
         SharedPreferences.Editor ed = mPrefs.edit();
         ed.putInt("current_position", tv.getCurrentPosition());
         ed.putInt("current_chapter", tv.getCurrent_chapter());
+        ed.putString("current_book", current_book);
         Log.i("Main", "Saving chapter to " + String.valueOf(tv.getCurrent_chapter() + " position " + String.valueOf(tv.getCurrentPosition())));
         ed.commit();
     }
@@ -277,7 +285,7 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
                             e.printStackTrace();
                         }
                         InputStream local = openFileInput("currentfile");
-                        EpubExtractor epubExtractor = new EpubExtractor(local).invoke();
+                        EpubExtractor epubExtractor = new EpubExtractor(local);
                         tv.init(epubExtractor.getChapters(), epubExtractor.getAuthor(), epubExtractor.getTitle());
                         stopTV();
 
@@ -367,12 +375,20 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
             }
             case ACTIVITY_BROWSE_LIBRARY: {
                 if (resultCode == RESULT_OK) {
-                    String filePath = data.getStringExtra("result");
+                    current_book= data.getStringExtra("result");
+
                     announce("Loading File");
                     EpubExtractor epubExtractor = null;
                     try {
-                        epubExtractor = new EpubExtractor(openFileInput(filePath)).invoke();
+                        epubExtractor = new EpubExtractor(openFileInput(current_book));
                         tv.init(epubExtractor.getChapters(), epubExtractor.getAuthor(), epubExtractor.getTitle());
+
+                        SharedPreferences settings =
+                                getPreferences(Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = settings.edit();
+                        editor.putString("current_book", current_book);
+                        editor.commit();
+                        Log.i("main","committed current book to "+current_book);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -459,9 +475,10 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
 
     private void load_sample_book() {
         try {
-            InputStream in = getAssets().open("The Idiot.epub");
+            InputStream in = getAssets().open("sicp.epub");
+//            InputStream in = getAssets().open("The Idiot.epub");
             announce("Loading File");
-            EpubExtractor epubExtractor = new EpubExtractor(in).invoke();
+            EpubExtractor epubExtractor = new EpubExtractor(in);
             tv.init(epubExtractor.getChapters(), epubExtractor.getAuthor(), epubExtractor.getTitle());
         } catch (IOException e) {
             e.printStackTrace();
@@ -489,24 +506,70 @@ public class MainActivity extends Activity implements EasyPermissions.Permission
     private void delete_library() {
         deleteFile("LIBRARY");
     }
+    private FileLibrary getLibrary(FileInputStream filehandle){
+
+        FileLibrary library = null;
+        try{
+            filehandle = openFileInput("LIBRARY");
+            library =  new FileLibrary(filehandle);
+            filehandle.close();
+            return library;
+        }catch (Exception e){
+            deleteFile("LIBRARY");
+            library =  new FileLibrary();
+            e.printStackTrace();
+            return library;
+        }
+    }
     private void scan_library() {
         new Thread(new Runnable() {
+            @SuppressLint("DefaultLocale")
             @Override
             public void run() {
-                FileLibrary library = null;
-                deleteFile("LIBRARY");
-                library = new FileLibrary();
+                FileInputStream filehandle=null;
+                FileLibrary library =getLibrary(filehandle);
+                int i = 0;
                 for (String filename : getFilesDir().list()) {
+                    if(library.contains(filename)==-1){
+                        i++;
+                    }
+                }
+
+                announce(String.format("Indexing %d books", i));
+                i=0;
+                for (String filename : getFilesDir().list()) {
+                    if(library.contains(filename)!=-1)continue;
+                    if(i%25!=0){
+                        FileOutputStream filehandleo;
+                        try {
+                            filehandleo = openFileOutput("LIBRARY", Context.MODE_PRIVATE);
+                        library.save(filehandleo);
+                        filehandleo.close();
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    i++;
                     try {
-                        EpubExtractor ex = new EpubExtractor(openFileInput(filename)).invoke();
-                        library.add(new LibraryBook(ex.getAuthor(), ex.getTitle(), filename, GoodReads.getRating(ex.getAuthor(), ex.getTitle()), ex.getNumberOfWords()));
-                    } catch (IOException e) {
+                        EpubExtractor ex = new EpubExtractor(openFileInput(filename));
+                        LibraryBook b = new LibraryBook(ex.getAuthor(), ex.getTitle(), filename, GoodReads.getRating(ex.getAuthor(), ex.getTitle()), ex.getNumberOfWords());
+                        announce(String.format("Indexed %s - %s", ex.getAuthor(),ex.getTitle()));
+                        library.add(b);
+
+                        Log.i("Scanner", String.format("Added book %s",b.title));
+                    } catch (Exception e) {
+                        Log.i("Scanner","Failed book");
                         e.printStackTrace();
                     }
                 }
+                Log.i("Scanner", "Scanner done");
                 try {
                     library.save(openFileOutput("LIBRARY", Context.MODE_PRIVATE));
+                    Log.i("Scanner", "LIbrary saved");
                 } catch (FileNotFoundException e) {
+                    Log.i("Scanner", "LIbrary couldn't be saved");
                     e.printStackTrace();
                 }
             }

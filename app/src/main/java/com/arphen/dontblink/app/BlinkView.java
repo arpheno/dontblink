@@ -169,10 +169,9 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
 
     private String next() {
         current_word_run++;
-        current_word_run++;
         if (run_limits.contains(current_word_run)) {
             for (OnAchievementListener l : achievementListeners) {
-                changeWpm(m_wpm * 1.03);
+                changeWpm(m_wpm * 1.005);
                 l.onAchievement(String.format("%d words streak!", current_word_run));
             }
 
@@ -180,13 +179,14 @@ public class BlinkView extends RelativeLayout implements View.OnClickListener {
 
         current_position++;
         if (current_position >= book_as_list_of_arrays_of_words.get(current_chapter).length) {
-            Log.i("Main", "switching chapter");
-            forceChapter(current_chapter + 1);
-            current_position = 0;
-        }
-        if (current_chapter == getNumberOfChapters()) {
-            stop(); // Stop playing and notify listeners
-            return "End of Book";
+            if (current_chapter + 1 == getNumberOfChapters()) {
+                stop(); // Stop playing and notify listeners
+                return "End of Book";
+            }else {
+                Log.i("Main", "switching chapter");
+                forceChapter(current_chapter + 1);
+                current_position = 0;
+            }
         }
         return book_as_list_of_arrays_of_words.get(current_chapter)[current_position];
 

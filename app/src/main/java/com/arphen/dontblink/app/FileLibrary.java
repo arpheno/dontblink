@@ -46,14 +46,20 @@ public class FileLibrary implements Iterable<LibraryBook> {
             }
             books.add(new LibraryBook(author, title, path, rating, wordcount));
         }
-        library_file.close();
     }
 
     public void update(LibraryBook book) {
         int position = contains(book);
         books.set(position, book);
     }
-
+    public int contains(String path){
+        for (int i = 0; i < books.size(); i++) {
+            if (Objects.equals(books.get(i).path(), path)) {
+                return i;
+            }
+        }
+        return -1;
+    }
     public int contains(LibraryBook book) {
 
         for (int i = 0; i < books.size(); i++) {
